@@ -4,6 +4,8 @@
 
   @layer base {
     :root {
+      --warning: 38 92% 50%;
+      --warning-foreground: 48 96% 89%;
       --background: 0 0% 100%;
       --foreground: 240 10% 3.9%;
       --card: 0 0% 100%;
@@ -29,9 +31,13 @@
       --chart-3: 197 37% 24%;
       --chart-4: 43 74% 66%;
       --chart-5: 27 87% 67%;
+      --sky: 177 100% 54.1%;
+      --green: 151 100% 62.4%;
     }
 
     .dark {
+      --warning: 48 96% 89%;
+      --warning-foreground: 48 96% 89%;
       --background: 240 10% 3.9%;
       --foreground: 0 0% 98%;
       --card: 240 10% 3.9%;
@@ -56,8 +62,29 @@
       --chart-3: 30 80% 55%;
       --chart-4: 280 65% 60%;
       --chart-5: 340 75% 55%;
+      --sky: 177 100% 54.1%;
+      --green: 151 100% 62.4%;
     }
   }
+
+  .animate-fadeInDown {
+    animation-name: fadeInDown;
+    animation-fill-mode: forwards;
+    animation-duration: 250ms;
+  }
+
+  @keyframes fadeInDown {
+    from {
+      opacity: 0;
+      transform: translate(0, -10%);
+    }
+  
+    to {
+      opacity: 1;
+      transform: translate(0, 0);
+    }
+  }
+
 
   @layer base {
     * {
