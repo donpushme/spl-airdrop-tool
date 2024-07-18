@@ -18,7 +18,7 @@ export default function NavBar() {
   const { setVisible: setModalVisible } = useWalletModal();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { alert, setAlert } = useAlertContext();
-  const { isSigned, setIsSigned } = useAppContext()
+  const { isSigned, setIsSigned } = useAppContext();
   const {
     buttonState,
     onConnect,
@@ -51,7 +51,7 @@ export default function NavBar() {
         type: "distructed",
       });
     }
-  }, [buttonState]);
+  }, [buttonState, setAlert]);
 
   const handleWalletChange = (event) => {
     switch (buttonState) {
@@ -69,7 +69,7 @@ export default function NavBar() {
     }
   };
 
-  const sign = useCallback( async () => {
+  const sign = useCallback(async () => {
     if (buttonState !== "connected") {
       setAlert({
         visible: true,
@@ -81,34 +81,32 @@ export default function NavBar() {
       return;
     }
     const response = await signIn(publicKey, wallet);
-    setAlert(response.alert)
+    setAlert(response.alert);
     setIsSigned(true);
-  }, [wallet, publicKey, setAlert, buttonState, setIsSigned])
+  }, [wallet, publicKey, setAlert, buttonState, setIsSigned]);
 
-  const signOut = useCallback (async () => {
-    window.localStorage.removeItem("token")
-  },[])
+  const signOut = useCallback(async () => {
+    window.localStorage.removeItem("token");
+  }, []);
 
   const test = async () => {
     await testSign();
-  }
+  };
 
   return (
     <nav className="relative flex justify-end border-border h-16 items-center px-4">
       <AlertCom />
       {isSigned ? (
-      <Button onClick={signOut} className="mr-4">
-        <UserIcon />
-        SIGN OUT
-      </Button>
-      ) :
-      (
+        <Button onClick={signOut} className="mr-4">
+          <UserIcon />
+          SIGN OUT
+        </Button>
+      ) : (
         <Button onClick={sign} className="mr-4">
-        <UserIcon />
-        SIGN IN
-      </Button>
-      )
-      }
+          <UserIcon />
+          SIGN IN
+        </Button>
+      )}
       <Button onClick={handleWalletChange}>
         <Wallet2Icon />
         {buttonState == "no-wallet" ? "Connect Wallet" : "Disconnect Wallet"}

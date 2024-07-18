@@ -7,7 +7,7 @@ export const AlertCom = () => {
   useEffect(() => {
     const timeout = setTimeout(() => setAlert(initialAlert), 2000);
     return () => clearTimeout(timeout);
-  }, [alert]);
+  }, [alert, setAlert]);
 
   return (
     alert.visible && (
