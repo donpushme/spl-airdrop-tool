@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import NftTble from "@/components/NftTable";
 import { useCallback, useState } from "react";
-import { getAccountInformation, getAssetsByCreator } from "@/lib/solana";
+import { getAccountInformation, getAssetsByCreator, inputRouter } from "@/lib/solana";
 import { MapPinIcon, SearchIcon } from "lucide-react";
 
 export default function Snapshot() {
@@ -20,13 +20,14 @@ export default function Snapshot() {
   );
 
   const getList = async () => {
-    const { NFTS } = await getAssetsByCreator(inputValue);
-    if (NFTS.length) {
-      console.log(NFTS);
-      setNfts(NFTS);
-    } else {
-      setNfts([]);
-    }
+    const res = await inputRouter(inputValue);
+    console.log(res)
+    // if (NFTS.length) {
+    //   console.log(NFTS);
+    //   setNfts(NFTS);
+    // } else {
+    //   setNfts([]);
+    // }
   };
   return (
     <div>
