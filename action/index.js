@@ -2,6 +2,7 @@ import { AxiosInstance, MemoryStoredToken } from "@/lib/utils";
 import { encode } from "bs58";
 import { API_URL } from "@/config";
 import axios from "axios";
+import { SuccessAlert, ErrorAlert } from "@/lib/alerts";
 
 export const signIn = async (publicKey, wallet) => {
   let message = "";
@@ -12,20 +13,18 @@ export const signIn = async (publicKey, wallet) => {
     });
     if (!data.success) {
       const alert = {
-        visible: true,
+        ...ErrorAlert,
         title: "Error",
         text: data.msg,
-        type: "destructed",
       };
       return { alert };
     }
     message = data?.message;
   } catch (error) {
     const alert = {
-      visible: true,
+      ...ErrorAlert,
       title: "Error",
       text: error?.message || JSON.stringify(error),
-      type: "distructed",
     };
     return { alert };
   }
@@ -43,29 +42,26 @@ export const signIn = async (publicKey, wallet) => {
     let alert = {};
     if (!data.success) {
       alert = {
-        visible: true,
+        ...ErrorAlert,
         title: "Error",
         text: data.msg,
-        type: "destructed",
       };
     } else {
       window.localStorage.setItem("token", data?.token);
       console.log(data);
       alert = {
-        visible: true,
+        ...SuccessAlert,
         title: "Welcome",
         text: "Successfully Singned",
-        type: "",
       };
     }
     return { alert , isSigned:true };
   } catch (error) {
     console.log(error);
     const alert = {
-      visible: true,
+      ...ErrorAlert,
       title: "Error",
       text: error?.message || JSON.stringify(error),
-      type: "distructed",
     };
     return { alert };
   }

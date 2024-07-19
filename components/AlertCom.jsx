@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Alert, AlertTitle, AlertDescription } from "./ui/alert";
-import { useAlertContext, initialAlert } from "@/contexts/AlertContext";
+import { useAlertContext } from "@/contexts/AlertContext";
+import { HideAlert } from "@/lib/alerts";
 
 export const AlertCom = () => {
   const {alert, setAlert} = useAlertContext()
   useEffect(() => {
-    const timeout = setTimeout(() => setAlert(initialAlert), 2000);
+    const timeout = setTimeout(() => setAlert(HideAlert), 2000);
     return () => clearTimeout(timeout);
   }, [alert, setAlert]);
 

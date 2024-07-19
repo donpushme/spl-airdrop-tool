@@ -14,6 +14,7 @@ import { clusterApiUrl } from "@solana/web3.js";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import { AlertProvider } from "@/contexts/AlertContext";
+import { AppProvider } from "@/contexts/AppContext";
 
 export default function Providers({ children }) {
   const network = WalletAdapterNetwork.Mainnet;
@@ -27,18 +28,18 @@ export default function Providers({ children }) {
     <>
       <ConnectionProvider endpoint={endpoint}>
         <WalletProvider wallets={wallets} autoConnect>
-          <AppContext.Provider value={{}}>
+          <AppProvider>
             <AlertProvider>
               <ThemeProvider
                 attribute="class"
-                defaultTheme="dark"
+                defaultTheme="system"
                 enableSystem
                 disableTransitionOnChange
               >
                 {children}
               </ThemeProvider>
             </AlertProvider>
-          </AppContext.Provider>
+          </AppProvider>
         </WalletProvider>
       </ConnectionProvider>
     </>

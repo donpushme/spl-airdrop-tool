@@ -1,12 +1,12 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 
 export const AppContext = createContext();
 
-const AppProvider = ({ children }) => {
+export const AppProvider = ({ children }) => {
   const [isSigned, setIsSigned] = useState(false);
-  
+
   return (
-    <AppContext.Provider values={{ isSigned, setIsSigned }}>
+    <AppContext.Provider value={{ isSigned, setIsSigned }}>
       {children}
     </AppContext.Provider>
   );

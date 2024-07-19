@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { UserIcon, Wallet2Icon } from "lucide-react";
+import { UserIcon, Wallet2Icon, Moon, Sun, SunMoon } from "lucide-react";
 import { Button } from "./ui/button";
 import { useWalletMultiButton } from "@solana/wallet-adapter-base-ui";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
@@ -11,6 +11,8 @@ import { useAlertContext } from "@/contexts/AlertContext";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { signIn, testSign } from "@/action";
 import { useAppContext } from "@/contexts/AppContext";
+import { SuccessAlert, ErrorAlert } from "@/lib/alerts";
+import { useTheme } from "next-themes";
 
 export default function NavBar() {
   const [error, setError] = useState(null);
@@ -19,6 +21,8 @@ export default function NavBar() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { alert, setAlert } = useAlertContext();
   const { isSigned, setIsSigned } = useAppContext();
+  const { setTheme, theme } = useTheme();
+  const [mode, setMode] = useState(theme);
   const {
     buttonState,
     onConnect,
@@ -45,64 +49,68 @@ export default function NavBar() {
       closeModal();
     } else if (buttonState === "no-wallet") {
       setAlert({
-        visible: true,
+        ...ErrorAlert,
         title: "Wallet Disconnected",
         text: "Please connect your wallet",
-        type: "distructed",
       });
     }
   }, [buttonState, setAlert]);
 
-  const handleWalletChange = (event) => {
+  const handleWalletChange = () => {
     switch (buttonState) {
       case "no-wallet":
         openModal();
         break;
-      // case "has-wallet":
-      //   console.log(buttonState)
-      //   if (onConnect) {
-      //     onConnect();
-      //   }
-      //   break;
+      case "has-wallet":
+        console.log(buttonState);
+        if (onConnect) {
+          onConnect();
+        }
+        break;
       default:
+        signOut();
         onDisconnect();
     }
   };
 
+  //SignUp and signIn at once.
   const sign = useCallback(async () => {
+    console.log(isSigned);
     if (buttonState !== "connected") {
       setAlert({
-        visible: true,
+        ...ErrorAlert,
         title: "Wallet Disconnected",
         text: "Please connect your wallet",
-        type: "distructed",
       });
       openModal();
       return;
     }
     const response = await signIn(publicKey, wallet);
     setAlert(response.alert);
-    setIsSigned(true);
-  }, [wallet, publicKey, setAlert, buttonState, setIsSigned]);
+    if (response.alert.visible) setIsSigned(true);
+  }, [wallet, publicKey, setAlert, buttonState, isSigned, setIsSigned]);
 
+  //SignOut by removing the token from LocalStorage
   const signOut = useCallback(async () => {
     window.localStorage.removeItem("token");
-  }, []);
+    setAlert({ ...SuccessAlert, text: "Signed Out" });
+    setIsSigned(false);
+  }, [setAlert, setIsSigned]);
 
   const test = async () => {
     await testSign();
   };
 
   return (
-    <nav className="relative flex justify-end border-border h-16 items-center px-4">
+    <nav className="relative flex justify-end border-border h-16 items-center px-4 gap-2">
       <AlertCom />
       {isSigned ? (
-        <Button onClick={signOut} className="mr-4">
+        <Button onClick={signOut}>
           <UserIcon />
           SIGN OUT
         </Button>
       ) : (
-        <Button onClick={sign} className="mr-4">
+        <Button onClick={sign}>
           <UserIcon />
           SIGN IN
         </Button>
@@ -111,7 +119,30 @@ export default function NavBar() {
         <Wallet2Icon />
         {buttonState == "no-wallet" ? "Connect Wallet" : "Disconnect Wallet"}
       </Button>
+      {mode == "light" && (
+        <Button
+          onClick={() => {
+            setTheme("dark");
+            setMode("dark");
+          }}
+        >
+          {" "}
+          <Moon />
+        </Button>
+      )}
+      {mode == "dark" && (
+        <Button
+          onClick={() => {
+            setTheme("light");
+            setMode("light");
+          }}
+        >
+          {" "}
+          <Sun />{" "}
+        </Button>
+      )}
       <WalletModal isOpen={isModalOpen} onClose={closeModal} />
+      
     </nav>
   );
 }

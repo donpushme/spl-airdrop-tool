@@ -1,17 +1,11 @@
 import { createContext, useContext, useState } from "react";
+import { HideAlert } from "@/lib/alerts";
 
 const AlertContext = createContext();
 
-export const initialAlert = {
-  visible: false,
-  title: "Default title",
-  text: "Customized text goes here",
-  type: "normal",
-};
-
 export function AlertProvider({ children }) {
   // For when the left nav is open and closed at tablet and below
-  const [alert, setAlert] = useState(initialAlert);
+  const [alert, setAlert] = useState(HideAlert);
   return (
     <AlertContext.Provider
       value={{
