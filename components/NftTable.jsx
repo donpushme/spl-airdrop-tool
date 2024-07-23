@@ -20,28 +20,23 @@ import {
 
 export default function NftTble(props) {
   const { nfts } = props;
-
-  if (nfts.length) {
+  if (nfts?.length) {
     return (
-      <div className="w-3/4 mx-auto mt-4 p-4 border rounded">
+      <div className="w-3/4 mx-auto mt-4 p-4 border border-green rounded">
         <Table>
           <TableCaption>NFT List</TableCaption>
           <TableHeader>
             <TableRow>
               <TableHead>No</TableHead>
-              <TableHead>Name</TableHead>
               <TableHead>Mint</TableHead>
-              <TableHead>Owner</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {nfts.map((nft, index) => {
+            {nfts?.map((nft, index) => {
               return (
                 <TableRow key={index}>
                   <TableCell>{index + 1}</TableCell>
-                  <TableCell>{nft?.content?.metadata?.name}</TableCell>
-                  <TableCell>{nft.id}</TableCell>
-                  <TableCell>{nft?.ownership?.owner}</TableCell>
+                  <TableCell>{nft}</TableCell>
                 </TableRow>
               );
             })}
