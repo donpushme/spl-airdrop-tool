@@ -7,8 +7,9 @@ import NftTble from "@/components/NftTable";
 import NftOwners from "@/components/FftOwners";
 import { useCallback, useState, useEffect } from "react";
 import { inputRouter, combineTwoHolderList } from "@/lib/solana";
-import { MapPinIcon, Search, SearchIcon } from "lucide-react";
+import { MapPinIcon, Search, SearchIcon, DownloadIcon } from "lucide-react";
 import Spinner from "@/components/Assests/spinner/Spinner";
+import { downloadObjectAsJson } from "@/lib/utils";
 
 export default function Snapshot() {
   const [inputValue, setInputValue] = useState("");
@@ -62,12 +63,17 @@ export default function Snapshot() {
   const clearList = useCallback(() => {
     setNftOwners([]);
     setNfts([]);
-    setIsCombining(false)
+    setIsCombining(false);
   }, [setNftOwners, setNfts, setIsCombining]);
+
+  const download = useCallback(() => {
+    if (nfts.length > 0) downloadObjectAsJson(nfts, "hash_list");
+    if (nftOwners.length > 0) downloadObjectAsJson(nftOwners, "holder_list");
+  }, [nfts, nftOwners]);
 
   return (
     <div>
-      <div className="flex gap-2 justify-center">
+      <div className="flex gap-2 justify-center items-center">
         <div className="grid w-full max-w-lg items-center gap-1.5">
           {/* <Label htmlFor="address"></Label> */}
           <Input
@@ -100,6 +106,9 @@ export default function Snapshot() {
             `${isCombining ? "combine" : "holderlist"}`
           )}
         </Button>
+        {(nftOwners.length > 0 || nfts.length > 0) && (
+          <DownloadIcon onClick={download} className="hover:cursor-pointer" />
+        )}
       </div>
       <NftTble nfts={nfts} />
       <NftOwners owners={nftOwners} />
