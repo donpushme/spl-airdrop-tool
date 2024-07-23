@@ -7,9 +7,13 @@ import NftTble from "@/components/NftTable";
 import NftOwners from "@/components/FftOwners";
 import { useCallback, useState, useEffect } from "react";
 import { inputRouter, combineTwoHolderList } from "@/lib/solana";
-import { MapPinIcon, Search, SearchIcon, DownloadIcon } from "lucide-react";
+import { DownloadIcon } from "lucide-react";
 import Spinner from "@/components/Assests/spinner/Spinner";
-import { downloadObjectAsJson } from "@/lib/utils";
+import {
+  downloadObjectAsJson,
+  downloadNftAsCsv,
+  downloadOwnersAsCsv,
+} from "@/lib/utils";
 
 export default function Snapshot() {
   const [inputValue, setInputValue] = useState("");
@@ -66,14 +70,19 @@ export default function Snapshot() {
     setIsCombining(false);
   }, [setNftOwners, setNfts, setIsCombining]);
 
-  const download = useCallback(() => {
+  const downloadAsJson = useCallback(() => {
     if (nfts.length > 0) downloadObjectAsJson(nfts, "hash_list");
     if (nftOwners.length > 0) downloadObjectAsJson(nftOwners, "holder_list");
   }, [nfts, nftOwners]);
 
+  const downloadAsCsv = useCallback(() => {
+    if (nfts.length > 0) downloadNftAsCsv(nfts, "hash_list");
+    if (nftOwners.length > 0) downloadOwnersAsCsv(nftOwners, "holder_list");
+  }, [nfts, nftOwners]);
+
   return (
     <div>
-      <div className="flex gap-2 justify-center items-center">
+      <div className="flex gap-2 justify-center items-end">
         <div className="grid w-full max-w-lg items-center gap-1.5">
           {/* <Label htmlFor="address"></Label> */}
           <Input
@@ -107,7 +116,20 @@ export default function Snapshot() {
           )}
         </Button>
         {(nftOwners.length > 0 || nfts.length > 0) && (
-          <DownloadIcon onClick={download} className="hover:cursor-pointer" />
+          <Button
+            onClick={downloadAsJson}
+            className="hover:cursor-pointer h-4 px-4 py-1"
+          >
+            .json
+          </Button>
+        )}
+        {(nftOwners.length > 0 || nfts.length > 0) && (
+          <Button
+            onClick={downloadAsCsv}
+            className="hover:cursor-pointer h-4 px-4 py-1"
+          >
+            .csv
+          </Button>
         )}
       </div>
       <NftTble nfts={nfts} />
