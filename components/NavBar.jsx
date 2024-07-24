@@ -102,7 +102,7 @@ export default function NavBar() {
   };
 
   return (
-    <nav className="relative flex justify-end border-border h-16 items-center px-4 gap-2">
+    <nav className="fixed w-full flex justify-end border-border h-32 items-center px-4 gap-2">
       <AlertCom />
       {isSigned ? (
         <Button onClick={signOut}>

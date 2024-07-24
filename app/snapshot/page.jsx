@@ -3,11 +3,10 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import NftTble from "@/components/NftTable";
-import NftOwners from "@/components/FftOwners";
+import NftTble from "@/components/snapshot/NftTable";
+import NftOwners from "@/components/snapshot/FftOwners";
 import { useCallback, useState, useEffect } from "react";
 import { inputRouter, combineTwoHolderList } from "@/lib/solana";
-import { DownloadIcon } from "lucide-react";
 import Spinner from "@/components/Assests/spinner/Spinner";
 import {
   downloadObjectAsJson,
