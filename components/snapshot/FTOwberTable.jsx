@@ -7,12 +7,32 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { TablePagination } from "./TablePagination";
+import { useState, useEffect } from "react";
+
+const initialArray = new Array(100).fill(1)
 
 export default function FTOwnerTable(props) {
-  const { owners } = props;
-  console.log(owners)
+  const [pages, setPages] = useState(1);
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(1000);
+  const [rowArray, setRowArray] = useState(initialArray);
+  const { ftOwners } = props;
 
-  if (owners?.length) {
+  useEffect(() => {
+    const totalLength = ftOwners.length;
+    const rows = rowsPerPage;
+    const addition = totalLength % rows == 0 ? 0 : 1;
+    const pageNum = Math.floor(totalLength / rows) + addition;
+    setPages(pageNum);
+  }, [ftOwners, rowsPerPage, setPages]);
+
+  useEffect(() => {
+    const array = new Array(rowsPerPage).fill(1);
+    setRowArray(array);
+  }, [rowsPerPage, setRowArray]);
+
+  if (ftOwners?.length) {
     return (
       <div className="w-3/4 mx-auto mt-4 p-4 border border-green rounded backdrop-blur-lg">
         <Table>
@@ -25,18 +45,19 @@ export default function FTOwnerTable(props) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {owners?.map((nft, index) => {
+          {rowArray?.map((item, index) => {
+              if(typeof ftOwners[rowsPerPage * (page - 1) + index] == 'undefined') return
               return (
                 <TableRow key={index}>
-                  <TableCell>{index + 1}</TableCell>
-                  <TableCell>{nft?.content?.metadata?.name}</TableCell>
-                  <TableCell>{nft.id}</TableCell>
-                  <TableCell>{nft?.ownership?.owner}</TableCell>
+                  <TableCell>{rowsPerPage * (page - 1) + index + 1}</TableCell>
+                  <TableCell>{ftOwners[rowsPerPage * (page - 1) + index].owner}</TableCell>
+                  <TableCell>{ftOwners[rowsPerPage * (page - 1) + index].balance}</TableCell>
                 </TableRow>
               );
             })}
           </TableBody>
         </Table>
+        <TablePagination pages={pages} page={page} setPage={setPage} />
       </div>
     );
   } else return <></>;

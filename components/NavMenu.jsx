@@ -13,6 +13,7 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
+import { useAppContext } from "@/contexts/AppContext";
 
 const components = [
   {
@@ -53,6 +54,8 @@ const components = [
 ];
 
 export function NavMenu() {
+  const {setShowRightBar, setShowLeftBar} = useAppContext()
+
   return (
     <NavigationMenu>
       <NavigationMenuList>

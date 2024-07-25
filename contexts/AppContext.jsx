@@ -13,15 +13,15 @@ export const AppProvider = ({ children }) => {
       if (event.clientY < 96) return;
 
       if (event.clientX < 20) {
-        setShowLeftBar(true);
+          setShowLeftBar(true);          
       }
-      
+
       if (event.clientX > 300) {
         setShowLeftBar(false);
       }
       
       if(event.clientX > window.innerWidth - 20){
-        setShowRightBar(true);
+          setShowRightBar(true);
       }
 
       if(event.clientX < window.innerWidth - 300){

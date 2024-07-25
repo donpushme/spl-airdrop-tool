@@ -1,9 +1,9 @@
 import Image from "next/image";
 
-export default function Spinner(props) {
+export default function Spinner() {
   return (
-    <div {...props}>
-      <Image src="/spinner/spinner.gif" fill alt="" />
+    <div className="relative w-4 aspect-square z-50">
+      <Image src="/spinner/spinner_round.gif" fill alt="" />
     </div>
   );
 }
