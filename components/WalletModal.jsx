@@ -43,6 +43,7 @@ function WalletModal({ isOpen, onClose }) {
                                 style={{ animationDelay: `800ms` }}
                                 onClick={() => {
                                     select("Solflare")
+                                    onClose()
                                 }}
                             />
                             <NextImage
@@ -54,6 +55,7 @@ function WalletModal({ isOpen, onClose }) {
                                 style={{ animationDelay: `600ms` }}
                                 onClick={() => {
                                     select("Phantom")
+                                    onClose()
                                 }}
                             />
                             <NextImage
@@ -65,6 +67,7 @@ function WalletModal({ isOpen, onClose }) {
                                 style={{ animationDelay: `400ms` }}
                                 onClick={() => {
                                     select("Backpack")
+                                    onClose()
                                 }}
                             />
                             <NextImage
@@ -76,6 +79,7 @@ function WalletModal({ isOpen, onClose }) {
                                 style={{ animationDelay: `200ms` }}
                                 onClick={() => {
                                     select("Magic Eden")
+                                    onClose()
                                 }}
                             />
                         </div>

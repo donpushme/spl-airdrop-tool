@@ -2,7 +2,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/Prividers";
 import dynamic from "next/dynamic";
-import SideBar from "@/components/SideBar";
+import LeftBar from "@/components/LeftBar";
+import RightBar from "@/components/RightBar";
 const NavBar = dynamic(() => import("@/components/NavBar"), {
   ssr: false,
   loading: () => <div className=""></div>,
@@ -20,11 +21,14 @@ export default function RootLayout({ children }) {
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <Providers>
-          <NavBar />
+          <NavBar className="z-30" />
+          <LeftBar />
           <div className="flex">
-            <SideBar />
-            <div className="flex justify-center items-center w-[calc(100vw-200px)] pt-32">{children}</div>
+            <div className="flex justify-center items-center w-full pt-28">
+              {children}
+            </div>
           </div>
+          <RightBar />
         </Providers>
       </body>
     </html>

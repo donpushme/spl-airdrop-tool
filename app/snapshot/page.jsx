@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import NftTble from "@/components/snapshot/NftTable";
-import NftOwners from "@/components/snapshot/FftOwners";
+import NftOwners from "@/components/snapshot/NftOwners";
 import { useCallback, useState, useEffect } from "react";
 import { inputRouter, combineTwoHolderList } from "@/lib/solana";
 import Spinner from "@/components/Assests/spinner/Spinner";
@@ -30,9 +30,11 @@ export default function Snapshot() {
     setIsCombining(true);
     try {
       const res = await inputRouter(inputValue, "holderlist");
+      console.log(res);
       if (res.holderList) {
         setNftOwners(combineTwoHolderList(nftOwners, res.holderList));
         setIsLoading(false);
+        setInputValue("");
       }
     } catch (error) {
       console.log(error);
@@ -50,6 +52,7 @@ export default function Snapshot() {
       const res = await inputRouter(inputValue, "hashlist");
       Array.isArray(res) && res.length ? setNfts(res) : setNfts([]);
       setIsLoading(false);
+      setInputValue("");
     } catch (error) {
       console.log(error);
       setIsLoading(false);
@@ -80,7 +83,7 @@ export default function Snapshot() {
   }, [nfts, nftOwners]);
 
   return (
-    <div>
+    <div className="w-full">
       <div className="flex gap-2 justify-center items-end">
         <div className="grid w-full max-w-lg items-center gap-1.5">
           {/* <Label htmlFor="address"></Label> */}
@@ -91,9 +94,6 @@ export default function Snapshot() {
             placeholder="Input address here ..."
             value={inputValue}
             onChange={handleChange}
-            onKeyPress={(e) => {
-              if (e.key === "Enter") getList();
-            }}
           />
         </div>
         <Button

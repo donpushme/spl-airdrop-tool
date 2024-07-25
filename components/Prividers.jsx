@@ -32,7 +32,7 @@ export default function Providers({ children }) {
             <AlertProvider>
               <ThemeProvider
                 attribute="class"
-                defaultTheme="system"
+                defaultTheme="dark"
                 enableSystem
                 disableTransitionOnChange
               >
