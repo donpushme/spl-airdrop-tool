@@ -3,7 +3,6 @@ import "./globals.css";
 import Providers from "@/components/Prividers";
 import dynamic from "next/dynamic";
 import LeftBar from "@/components/LeftBar";
-import RightBar from "@/components/RightBar";
 const NavBar = dynamic(() => import("@/components/NavBar"), {
   ssr: false,
   loading: () => <div className=""></div>,
@@ -28,7 +27,6 @@ export default function RootLayout({ children }) {
               {children}
             </div>
           </div>
-          <RightBar />
         </Providers>
       </body>
     </html>

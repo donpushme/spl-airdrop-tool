@@ -17,6 +17,7 @@ import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { useWallet } from "@solana/wallet-adapter-react";
 import WalletModal from "@/components/WalletModal";
 import { AlertCom } from "@/components/AlertCom";
+import RightBar from "@/components/RightBar"
 import { useAppContext } from "@/contexts/AppContext";
 import { useAlertContext } from "@/contexts/AlertContext";
 import { SuccessAlert, ErrorAlert } from "@/lib/alerts";
@@ -152,7 +153,8 @@ export default function NavBar({ className }) {
             setMouseTrack((prev) => !prev);
           }}
         /> */}
-          <ProfileDropDown sign={sign} signOut={signOut} isSigned={isSigned} />
+          {/* <ProfileDropDown sign={sign} signOut={signOut} isSigned={isSigned} /> */}
+          <RightBar/>
         </div>
       </nav>
       <WalletModal isOpen={isModalOpen} onClose={closeModal} />

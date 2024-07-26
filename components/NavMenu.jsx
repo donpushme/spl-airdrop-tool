@@ -136,7 +136,7 @@ export function NavMenu() {
                 Get all holders of token and airdrop
               </ListItem>
               <ListItem href="/airdrop" title="Airdrop">
-                Airdrop you token to users
+                Airdrop your token to users
               </ListItem>
             </ul>
           </NavigationMenuContent>

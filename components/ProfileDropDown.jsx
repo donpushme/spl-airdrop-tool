@@ -32,6 +32,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import RightBar from "./RightBar";
 
 export function ProfileDropDown(props) {
   const { sign, signOut, isSigned } = props;
@@ -51,7 +52,7 @@ export function ProfileDropDown(props) {
         <DropdownMenuGroup>
           <DropdownMenuItem>
             <User className="mr-2 h-4 w-4" />
-            <span>Profile</span>
+            <RightBar/>
           </DropdownMenuItem>
           <DropdownMenuItem>
             <CreditCard className="mr-2 h-4 w-4" />
