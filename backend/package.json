@@ -31,7 +31,7 @@
     "http": "^0.0.1-security",
     "http-errors": "^2.0.0",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.4.3",
+    "mongoose": "^8.5.1",
     "nanoid": "3.3.4",
     "socket.io": "^4.7.5",
     "tweetnacl": "^1.0.3",
