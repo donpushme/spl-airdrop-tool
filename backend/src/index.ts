@@ -8,6 +8,8 @@ import { authMiddleware, AuthRequest } from './middlewares/authMiddleware';
 import bodyParser from 'body-parser';
 import cookieParser from "cookie-parser";
 import cors from 'cors';
+import airdropRouter from './routes/airdrop';
+
 const app = express();
 app.use(cors());
 app.use(cookieParser())
@@ -19,6 +21,7 @@ app.get("/", authMiddleware, (req: AuthRequest, res: Response) => {
 })
 
 app.use("/auth", authRouter);
+app.use("/airdrop", airdropRouter);
 
 //For catching 404 Error
 app.use(notFoundHandler);

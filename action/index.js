@@ -55,7 +55,7 @@ export const signIn = async (publicKey, wallet) => {
         text: "Successfully Singned",
       };
     }
-    return { alert , isSigned:true };
+    return { alert, isSigned: true };
   } catch (error) {
     console.log(error);
     const alert = {
@@ -67,13 +67,62 @@ export const signIn = async (publicKey, wallet) => {
   }
 };
 
-export const testSign = async () => {
+export const fileUpload = async (data, type) => {
   const response = await AxiosInstance.request({
-    method: "get",
-    url: "/",
+    method: "post",
+    url: "/airdrop/list-upload",
     headers: {
       Authorization: `Bearer ${window.localStorage.getItem("token")}`,
     },
+    data: { data, type },
   });
   console.log(response);
 };
+
+export const uploadChunk = async (chunk, uploadId, chunkIndex) => {
+  const formData = new FormData();
+  formData.set("file", chunk);
+  console.log(formData)
+  try {
+    await AxiosInstance.request({
+      url: "/airdrop/upload-endpoint",
+      method: "POST",
+      data: formData,
+      headers: {
+        'X-Upload-Id': uploadId,
+        'X-Chunk-Index': chunkIndex
+      },
+    });
+  } catch (error) {
+    console.log
+  }
+};
+
+export const finalizeUpload = async (uploadId, filetype) => {
+  const response = await AxiosInstance.request({
+    url: "/airdrop/final-upload",
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    data: JSON.stringify({
+      uploadId, filetype
+    }),
+  });
+  return response.data
+};
+
+export const getList = async (fileName, fileType) => {
+  fileType == 'c' ? fileType = "csv" : fileType = "json";
+  const response = await AxiosInstance.request({
+    url: "/airdrop/loadlist",
+    method: "POST",
+    headers:{
+      "Content-Type": "application/json",
+    },
+    data: {
+      fileName,
+      fileType
+    }
+  })
+}
