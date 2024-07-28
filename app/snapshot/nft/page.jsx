@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import NftTble from "@/components/snapshot/NftTable";
 import NftOwners from "@/components/snapshot/NftOwners";
 import { useCallback, useState, useEffect } from "react";
-import { inputRouter, combineTwoHolderList } from "@/lib/solana";
+import { inputRouter, combineTwoHolderList } from "@/lib/nftSnapshot";
 import Spinner from "@/components/Assests/spinner/Spinner";
 import {
   downloadObjectAsJson,

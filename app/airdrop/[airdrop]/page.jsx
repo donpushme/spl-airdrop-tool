@@ -15,31 +15,35 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { uploadChunk, finalizeUpload } from "@/action";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { loadList } from "@/action";
+import { loadListbyChunks } from "@/action";
+import { getTokenPrice } from "@/lib/ftSnapshot";
+import FTOwnerTable from "@/components/airdrop/FTOwberTable";
 
 export default function Airdrop() {
   const path = usePathname();
   const [list, setList] = useState([]);
   const [amountPerEach, setAmountPerEach] = useState("");
   const [totalAmount, setTotalAmount] = useState("");
-  const [price, setPrice] = useState(1);
+  const [price, setPrice] = useState(null);
   const [address, setAddress] = useState("");
 
   useEffect(() => {
     let fileName;
     let fileType;
-    const start = async () => {
-      const { data } = await loadList(fileName, fileType);
-      const list = JSON.parse(Buffer.from(data.data).toString());
-      console.log(list);
-    };
-    if (!path.includes('inputfile')) {
-      console.log(path)
+    if (!path.includes("inputfile")) {
+      console.log(path);
       fileName = path.slice(9).slice(0, 16);
       fileType = path[path.length - 1];
-      start();
+      fileType == "c" ? (fileType = "csv") : (fileType = "json");
+      getList(fileName, fileType);
     }
   }, []);
+
+  const getList = async (fileName, fileType) => {
+    const data = await loadListbyChunks(fileName, fileType);
+    const list = data
+    if (list.length) setList(list);
+  };
 
   /**
    * Upload the file as soon as the user input the file(.json/.csv)
@@ -50,9 +54,9 @@ export default function Airdrop() {
     const target = event.target;
     if (target.files && target.files.length > 0) {
       const file = target.files[0];
-      let filetype = file.type;
-      if (!filetype.match("json") && !filetype.match("csv")) return;
-      filetype.match("json") ? (filetype = "json") : (filetype = "csv");
+      let fileType = file.type;
+      if (!fileType.match("json") && !fileType.match("csv")) return;
+      fileType.match("json") ? (fileType = "json") : (fileType = "csv");
       const chunkSize = 1024 * 1024; // 1MB chunks
       const uploadId = Date.now().toString(); // Unique identifier for the upload session
 
@@ -69,15 +73,13 @@ export default function Airdrop() {
 
       // Finalize the upload
       try {
-        const { success, message, fileName } = await finalizeUpload(
-          uploadId,
-          filetype
-        );
+        const { success, message, fileName } = await finalizeUpload( uploadId, fileType );
         window.history.replaceState(
           {},
           "",
-          `/airdrop/${fileName}${filetype[0]}`
+          `/airdrop/${fileName}${fileType[0]}`
         );
+        getList(fileName, fileType);
       } catch (error) {
         console.log(error);
       }
@@ -86,158 +88,236 @@ export default function Airdrop() {
 
   const handleAmountPerEachChange = (e) => {
     const value = e.target.value;
-    if(isNaN(Number(value))) return;
+    const length = list.length;
+    if (isNaN(Number(value))) return;
     setAmountPerEach(Number(value));
-    if(price) setTotalAmount(Number(value) * price);
-  }
+    if (price) setTotalAmount(Number(value) * length);
+  };
 
   const handleTotalAmountChange = (e) => {
     const value = e.target.value;
-    if(isNaN(Number(value))) return;
+    if (isNaN(Number(value))) return;
     setTotalAmount(Number(value));
-    if(price) setAmountPerEach(Number(value) / price);
-  }
+    if (price) setAmountPerEach(Number(value) / length);
+  };
+
+  const getPrice = async (address) => {
+    try {
+      const res = await getTokenPrice(address);
+      console.log(res);
+      if (res) setPrice(res);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleAddressChange = (e) => {
+    const value = e.target.value;
+    setAddress(value);
+    if (value.length == 44) {
+      getPrice(value);
+    }
+  };
 
   return (
-    <Tabs defaultValue="default" className="w-[900px]">
-      <TabsList className="grid w-full grid-cols-3">
-        <TabsTrigger value="default">To list of holders</TabsTrigger>
-        <TabsTrigger value="singe_collection">
-          For single NFT collection
-        </TabsTrigger>
-        <TabsTrigger value="combined_collection">
-          For multi-NFT collection
-        </TabsTrigger>
-      </TabsList>
-      <TabsContent value="default">
-        <Card>
-          <CardHeader>
-            <CardTitle>Simple airdrop</CardTitle>
-            <CardDescription>
-              You can airdrop your token to the list of wallet account.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="space-y-1">
-              <Label htmlFor="name">You token address</Label>
-              <Input id="address" placeholder="Input the token address here"  value={address} onChange={(e) => setAddress(e.target.value)}/>
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="username">Wallet list</Label>
-              <Input id="wallet_list" type="file" onChange={onChooseFile} />
-            </div>
-            <div className="flex justify-between gap-2 flex-col md:flex-row">
-              <div className="my-0">
-                <Label htmlFor="amount_per_each">Amount per each wallet</Label>
+    <div>
+      <Tabs defaultValue="default" className="w-[900px]">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="default">To list of holders</TabsTrigger>
+          <TabsTrigger value="singe_collection">
+            For single NFT collection
+          </TabsTrigger>
+          <TabsTrigger value="combined_collection">
+            For multi-NFT collection
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="default">
+          <Card>
+            <CardHeader>
+              <CardTitle>Simple airdrop</CardTitle>
+              <CardDescription>
+                You can airdrop your token to the list of wallet account.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="space-y-1">
+                <Label htmlFor="name">You token address</Label>
                 <Input
-                  id="amount_per_each"
-                  type="text"
-                  value={amountPerEach}
-                  onChange={handleAmountPerEachChange}
+                  id="address"
+                  placeholder="Input the token address here"
+                  value={address}
+                  onChange={handleAddressChange}
                 />
               </div>
-              <div className="my-0">
-                <Label htmlFor="totoal_amount">Total Amount</Label>
+              <div className="space-y-1">
+                <Label htmlFor="username">Wallet list</Label>
+                {list.length > 0 ? (
+                  <Button
+                    className="block"
+                    onClick={() => {
+                      setList([]);
+                    }}
+                  >
+                    New
+                  </Button>
+                ) : (
+                  <Input id="wallet_list" type="file" onChange={onChooseFile} />
+                )}
+              </div>
+              {price && (
+                <div className="flex justify-between gap-2 flex-col md:flex-row">
+                  <div className="my-0">
+                    <Label htmlFor="amount_per_each">
+                      Amount per each wallet
+                    </Label>
+                    <Input
+                      id="amount_per_each"
+                      type="text"
+                      value={amountPerEach}
+                      onChange={handleAmountPerEachChange}
+                    />
+                  </div>
+                  <div className="my-0">
+                    <Label htmlFor="totoal_amount">Total Amount</Label>
+                    <Input
+                      id="totoal_amount"
+                      type="text"
+                      value={totalAmount}
+                      onChange={handleTotalAmountChange}
+                    />
+                  </div>
+                </div>
+              )}
+            </CardContent>
+            <CardFooter>
+              <Button>Airdrop</Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+        <TabsContent value="singe_collection">
+          <Card>
+            <CardHeader>
+              <CardTitle>Airdrop to Collection</CardTitle>
+              <CardDescription>
+                You can airdrop your token to the list of wallet account.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="space-y-1">
+                <Label htmlFor="name">You token address</Label>
                 <Input
-                  id="totoal_amount"
-                  type="text"
-                  value={totalAmount}
-                  onChange={handleTotalAmountChange}
+                  id="address"
+                  placeholder="Input the token address here"
                 />
               </div>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button>Airdrop</Button>
-          </CardFooter>
-        </Card>
-      </TabsContent>
-      <TabsContent value="singe_collection">
-        <Card>
-          <CardHeader>
-            <CardTitle>Airdrop to Collection</CardTitle>
-            <CardDescription>
-              You can airdrop your token to the list of wallet account.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="space-y-1">
-              <Label htmlFor="name">You token address</Label>
-              <Input id="address" placeholder="Input the token address here" />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="username">Collection</Label>
-              <Input id="wallet_list" type="file" onChange={onChooseFile} />
-            </div>
-            <div className="flex justify-between gap-2 flex-col md:flex-row">
-              <div className="my-0">
-                <Label htmlFor="amount_per_each">Amount per each wallet</Label>
+              <div className="space-y-1">
+                <Label htmlFor="username">Collection</Label>
+                {list.length > 0 ? (
+                  <Button
+                    className="block"
+                    onClick={() => {
+                      setList([]);
+                    }}
+                  >
+                    New
+                  </Button>
+                ) : (
+                  <Input id="wallet_list" type="file" onChange={onChooseFile} />
+                )}
+              </div>
+              {price && (
+                <div className="flex justify-between gap-2 flex-col md:flex-row">
+                  <div className="my-0">
+                    <Label htmlFor="amount_per_each">
+                      Amount per each wallet
+                    </Label>
+                    <Input
+                      id="amount_per_each"
+                      type="text"
+                      value={amountPerEach}
+                      onChange={handleAmountPerEachChange}
+                    />
+                  </div>
+                  <div className="my-0">
+                    <Label htmlFor="totoal_amount">Total Amount</Label>
+                    <Input
+                      id="totoal_amount"
+                      type="text"
+                      value={totalAmount}
+                      onChange={handleTotalAmountChange}
+                    />
+                  </div>
+                </div>
+              )}
+            </CardContent>
+            <CardFooter>
+              <Button>Airdrop</Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+        <TabsContent value="combined_collection">
+          <Card>
+            <CardHeader>
+              <CardTitle>Muli-airdrop</CardTitle>
+              <CardDescription>
+                You can airdrop your token to the list of wallet account.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="space-y-1">
+                <Label htmlFor="name">You token address</Label>
                 <Input
-                  id="amount_per_each"
-                  type="text"
-                  value={amountPerEach}
-                  onChange={handleAmountPerEachChange}
+                  id="address"
+                  placeholder="Input the token address here"
                 />
               </div>
-              <div className="my-0">
-                <Label htmlFor="totoal_amount">Total Amount</Label>
-                <Input
-                  id="totoal_amount"
-                  type="text"
-                  value={totalAmount}
-                  onChange={handleTotalAmountChange}
-                />
+              <div className="space-y-1">
+                <Label htmlFor="username">Wallet list</Label>
+                {list.length > 0 ? (
+                  <Button
+                    className="block"
+                    onClick={() => {
+                      setList([]);
+                    }}
+                  >
+                    New
+                  </Button>
+                ) : (
+                  <Input id="wallet_list" type="file" onChange={onChooseFile} />
+                )}
               </div>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button>Airdrop</Button>
-          </CardFooter>
-        </Card>
-      </TabsContent>
-      <TabsContent value="combined_collection">
-        <Card>
-          <CardHeader>
-            <CardTitle>Muli-airdrop</CardTitle>
-            <CardDescription>
-              You can airdrop your token to the list of wallet account.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="space-y-1">
-              <Label htmlFor="name">You token address</Label>
-              <Input id="address" placeholder="Input the token address here" />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="username">Wallet list</Label>
-              <Input id="wallet_list" type="file" onChange={onChooseFile} />
-            </div>
-            <div className="flex justify-between gap-2 flex-col md:flex-row">
-              <div className="my-0">
-                <Label htmlFor="amount_per_each">Amount per each wallet</Label>
-                <Input
-                  id="amount_per_each"
-                  type="text"
-                  value={amountPerEach}
-                  onChange={handleAmountPerEachChange}
-                />
-              </div>
-              <div className="my-0">
-                <Label htmlFor="totoal_amount">Total Amount</Label>
-                <Input
-                  id="totoal_amount"
-                  type="text"
-                  value={totalAmount}
-                  onChange={handleTotalAmountChange}
-                />
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button>Airdrop</Button>
-          </CardFooter>
-        </Card>
-      </TabsContent>
-    </Tabs>
+              {price && (
+                <div className="flex justify-between gap-2 flex-col md:flex-row">
+                  <div className="my-0">
+                    <Label htmlFor="amount_per_each">
+                      Amount per each wallet
+                    </Label>
+                    <Input
+                      id="amount_per_each"
+                      type="text"
+                      value={amountPerEach}
+                      onChange={handleAmountPerEachChange}
+                    />
+                  </div>
+                  <div className="my-0">
+                    <Label htmlFor="totoal_amount">Total Amount</Label>
+                    <Input
+                      id="totoal_amount"
+                      type="text"
+                      value={totalAmount}
+                      onChange={handleTotalAmountChange}
+                    />
+                  </div>
+                </div>
+              )}
+            </CardContent>
+            <CardFooter>
+              <Button>Airdrop</Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+      </Tabs>
+      <FTOwnerTable list={list}/>
+    </div>
   );
 }

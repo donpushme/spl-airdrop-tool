@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useState, useEffect } from "react";
-import { TablePagination } from "./TablePagination";
+import { TablePagination } from "../TablePagination";
 
 const initialArray = new Array(100).fill(1)
 

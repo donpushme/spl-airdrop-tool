@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/pagination";
 
 import { useCallback, useState, useEffect } from "react";
-import { Input } from "../ui/input";
+import { Input } from "./ui/input";
 import { ChevronsRight, ChevronRight, ChevronsLeft, ChevronLeft } from "lucide-react";
 
 export function TablePagination(props) {

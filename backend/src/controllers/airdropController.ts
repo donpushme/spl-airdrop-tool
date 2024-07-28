@@ -35,10 +35,12 @@ const chunkUpload = expressAsyncHandler(async (req: Request, res: Response) => {
  * @param res 
  */
 const finalUpload = (req: Request, res: Response) => {
-  const { uploadId, filetype } = req.body;
+  const { uploadId, fileType } = req.body;
+  console.log(uploadId, fileType)
   const destinationPath = path.join('uploads', uploadId);
   const randomFileName = uuid(); // Randomly generated file name with .data extension
-  const finalFilePath = path.join('uploads', `${randomFileName}.${filetype}`);
+  const finalFilePath = path.join('uploads', `${randomFileName}.${fileType}`);
+  console.log(finalFilePath)
 
   const writeStream = fs.createWriteStream(finalFilePath);
   const chunks = fs.readdirSync(destinationPath).sort();
@@ -52,7 +54,7 @@ const finalUpload = (req: Request, res: Response) => {
 
   writeStream.end(() => {
     fs.rmdirSync(destinationPath);
-    res.status(200).json({ success: true, message: 'File upload complete', fileName: randomFileName, filetype });
+    res.status(200).json({ success: true, message: 'File upload complete', fileName: randomFileName, fileType });
   });
 }
 
@@ -61,28 +63,45 @@ const finalUpload = (req: Request, res: Response) => {
  * @param req 
  * @param res 
  */
-const loadList = (req: Request, res: Response) => {
+const loadList = expressAsyncHandler(async (req: Request, res: Response) => {
+  const {page, perPage} = req.body;
+  const start = (page - 1) * perPage;
+  const end = start + perPage;
   const { fileName, fileType } = req.body;
   const dir = `uploads\\${fileName}.${fileType}`
+  console.log(dir)
+  const data = await readListFromFile(dir);
+  
+  const paginatedData = data.slice(start, end);
+
+  if (data) res.status(200).json({ paginatedData })
+  else throw new CustomError(500, 'Reading file error')
+})
+
+const readListFromFile = async (dir: string) => {
+  const fileType = dir.split(".")[1];
   if (fileType == 'json') {
-    const data = fs.readFileSync(dir);
-    if (data) res.status(200).json({ data })
+    let data = fs.readFileSync(dir);
+    data = JSON.parse(Buffer.from(data).toString())
+    if (data) return data;
     else throw new CustomError(500, 'There is no data')
   } else {
-    const result :  any[] = [];
-
+    const result: any[] = [];
     const options = { header: true };
-    
-    fs.createReadStream(dir)
-      .pipe(Papa.parse(Papa.NODE_STREAM_INPUT, options))
-      .on("data", (data) => {
-        result.push(data);
-      })
-      .on("end", () => {
-        const jsonString = JSON.stringify(result);
-        const buff = Buffer.from(jsonString, 'utf8');
-        res.status(200).json({ data: buff})
-      });
+    return new Promise<any>((resolve, reject) => {
+      fs.createReadStream(dir)
+        .pipe(Papa.parse(Papa.NODE_STREAM_INPUT, options))
+        .on("data", (data) => {
+          result.push(data);
+        })
+        .on("end", () => {
+          resolve(result);
+        })
+        .on('error', (error) => {
+          reject(new CustomError(500, `Error reading CSV file: ${error.message}`))
+        })
+    })
+
   }
 }
 

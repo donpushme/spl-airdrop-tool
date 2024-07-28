@@ -17,22 +17,22 @@ export default function FTOwnerTable(props) {
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(1000);
   const [rowArray, setRowArray] = useState(initialArray);
-  const { ftOwners } = props;
+  const { list } = props;
 
   useEffect(() => {
-    const totalLength = ftOwners.length;
+    const totalLength = list.length;
     const rows = rowsPerPage;
     const addition = totalLength % rows == 0 ? 0 : 1;
     const pageNum = Math.floor(totalLength / rows) + addition;
     setPages(pageNum);
-  }, [ftOwners, rowsPerPage, setPages]);
+  }, [list, rowsPerPage, setPages]);
 
   useEffect(() => {
     const array = new Array(rowsPerPage).fill(1);
     setRowArray(array);
   }, [rowsPerPage, setRowArray]);
 
-  if (ftOwners?.length) {
+  if (list?.length) {
     return (
       <div className="w-3/4 mx-auto mt-4 p-4 border border-green rounded backdrop-blur-lg">
         <Table>
@@ -46,12 +46,12 @@ export default function FTOwnerTable(props) {
           </TableHeader>
           <TableBody>
           {rowArray?.map((item, index) => {
-              if(typeof ftOwners[rowsPerPage * (page - 1) + index] == 'undefined') return
+              if(typeof list[rowsPerPage * (page - 1) + index] == 'undefined') return
               return (
                 <TableRow key={index}>
                   <TableCell>{rowsPerPage * (page - 1) + index + 1}</TableCell>
-                  <TableCell>{ftOwners[rowsPerPage * (page - 1) + index].owner}</TableCell>
-                  <TableCell>{ftOwners[rowsPerPage * (page - 1) + index].balance}</TableCell>
+                  <TableCell>{list[rowsPerPage * (page - 1) + index].owner}</TableCell>
+                  <TableCell>{list[rowsPerPage * (page - 1) + index].balance}</TableCell>
                 </TableRow>
               );
             })}
