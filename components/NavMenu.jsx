@@ -135,7 +135,7 @@ export function NavMenu() {
               <ListItem href="/snapshot/ft" title="Fungible Token Snapshot">
                 Get all holders of token and airdrop
               </ListItem>
-              <ListItem href="/airdrop" title="Airdrop">
+              <ListItem href="/airdrop/inputfile" title="Airdrop">
                 Airdrop your token to users
               </ListItem>
             </ul>

@@ -15,16 +15,30 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { uploadChunk, finalizeUpload } from "@/action";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getList } from "@/action";
+import { loadList } from "@/action";
 
 export default function Airdrop() {
   const path = usePathname();
-  const fileName = path.slice(9).slice(0, 16);
-  const fileType = path[path.length - 1];
   const [list, setList] = useState([]);
-  
+  const [amountPerEach, setAmountPerEach] = useState("");
+  const [totalAmount, setTotalAmount] = useState("");
+  const [price, setPrice] = useState(1);
+  const [address, setAddress] = useState("");
+
   useEffect(() => {
-    getList(fileName, fileType);
+    let fileName;
+    let fileType;
+    const start = async () => {
+      const { data } = await loadList(fileName, fileType);
+      const list = JSON.parse(Buffer.from(data.data).toString());
+      console.log(list);
+    };
+    if (!path.includes('inputfile')) {
+      console.log(path)
+      fileName = path.slice(9).slice(0, 16);
+      fileType = path[path.length - 1];
+      start();
+    }
   }, []);
 
   /**
@@ -69,6 +83,21 @@ export default function Airdrop() {
       }
     }
   };
+
+  const handleAmountPerEachChange = (e) => {
+    const value = e.target.value;
+    if(isNaN(Number(value))) return;
+    setAmountPerEach(Number(value));
+    if(price) setTotalAmount(Number(value) * price);
+  }
+
+  const handleTotalAmountChange = (e) => {
+    const value = e.target.value;
+    if(isNaN(Number(value))) return;
+    setTotalAmount(Number(value));
+    if(price) setAmountPerEach(Number(value) / price);
+  }
+
   return (
     <Tabs defaultValue="default" className="w-[900px]">
       <TabsList className="grid w-full grid-cols-3">
@@ -91,7 +120,7 @@ export default function Airdrop() {
           <CardContent className="space-y-2">
             <div className="space-y-1">
               <Label htmlFor="name">You token address</Label>
-              <Input id="address" placeholder="Input the token address here" />
+              <Input id="address" placeholder="Input the token address here"  value={address} onChange={(e) => setAddress(e.target.value)}/>
             </div>
             <div className="space-y-1">
               <Label htmlFor="username">Wallet list</Label>
@@ -100,11 +129,21 @@ export default function Airdrop() {
             <div className="flex justify-between gap-2 flex-col md:flex-row">
               <div className="my-0">
                 <Label htmlFor="amount_per_each">Amount per each wallet</Label>
-                <Input id="amount_per_each" type="text" />
+                <Input
+                  id="amount_per_each"
+                  type="text"
+                  value={amountPerEach}
+                  onChange={handleAmountPerEachChange}
+                />
               </div>
               <div className="my-0">
                 <Label htmlFor="totoal_amount">Total Amount</Label>
-                <Input id="totoal_amount" type="text" />
+                <Input
+                  id="totoal_amount"
+                  type="text"
+                  value={totalAmount}
+                  onChange={handleTotalAmountChange}
+                />
               </div>
             </div>
           </CardContent>
@@ -116,46 +155,86 @@ export default function Airdrop() {
       <TabsContent value="singe_collection">
         <Card>
           <CardHeader>
-            <CardTitle>Password</CardTitle>
+            <CardTitle>Airdrop to Collection</CardTitle>
             <CardDescription>
-              Change your password here. After saving, you will be logged out.
+              You can airdrop your token to the list of wallet account.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="space-y-1">
-              <Label htmlFor="current">Current password</Label>
-              <Input id="current" type="password" />
+              <Label htmlFor="name">You token address</Label>
+              <Input id="address" placeholder="Input the token address here" />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="new">New password</Label>
-              <Input id="new" type="password" />
+              <Label htmlFor="username">Collection</Label>
+              <Input id="wallet_list" type="file" onChange={onChooseFile} />
+            </div>
+            <div className="flex justify-between gap-2 flex-col md:flex-row">
+              <div className="my-0">
+                <Label htmlFor="amount_per_each">Amount per each wallet</Label>
+                <Input
+                  id="amount_per_each"
+                  type="text"
+                  value={amountPerEach}
+                  onChange={handleAmountPerEachChange}
+                />
+              </div>
+              <div className="my-0">
+                <Label htmlFor="totoal_amount">Total Amount</Label>
+                <Input
+                  id="totoal_amount"
+                  type="text"
+                  value={totalAmount}
+                  onChange={handleTotalAmountChange}
+                />
+              </div>
             </div>
           </CardContent>
           <CardFooter>
-            <Button>Save password</Button>
+            <Button>Airdrop</Button>
           </CardFooter>
         </Card>
       </TabsContent>
       <TabsContent value="combined_collection">
         <Card>
           <CardHeader>
-            <CardTitle>Password</CardTitle>
+            <CardTitle>Muli-airdrop</CardTitle>
             <CardDescription>
-              Change your password here. After saving, you will be logged out.
+              You can airdrop your token to the list of wallet account.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="space-y-1">
-              <Label htmlFor="current">Current password</Label>
-              <Input id="current" type="password" />
+              <Label htmlFor="name">You token address</Label>
+              <Input id="address" placeholder="Input the token address here" />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="new">New password</Label>
-              <Input id="new" type="password" />
+              <Label htmlFor="username">Wallet list</Label>
+              <Input id="wallet_list" type="file" onChange={onChooseFile} />
+            </div>
+            <div className="flex justify-between gap-2 flex-col md:flex-row">
+              <div className="my-0">
+                <Label htmlFor="amount_per_each">Amount per each wallet</Label>
+                <Input
+                  id="amount_per_each"
+                  type="text"
+                  value={amountPerEach}
+                  onChange={handleAmountPerEachChange}
+                />
+              </div>
+              <div className="my-0">
+                <Label htmlFor="totoal_amount">Total Amount</Label>
+                <Input
+                  id="totoal_amount"
+                  type="text"
+                  value={totalAmount}
+                  onChange={handleTotalAmountChange}
+                />
+              </div>
             </div>
           </CardContent>
           <CardFooter>
-            <Button>Save password</Button>
+            <Button>Airdrop</Button>
           </CardFooter>
         </Card>
       </TabsContent>

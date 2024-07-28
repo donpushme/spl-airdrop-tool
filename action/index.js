@@ -82,19 +82,19 @@ export const fileUpload = async (data, type) => {
 export const uploadChunk = async (chunk, uploadId, chunkIndex) => {
   const formData = new FormData();
   formData.set("file", chunk);
-  console.log(formData)
+  console.log(formData);
   try {
     await AxiosInstance.request({
       url: "/airdrop/upload-endpoint",
       method: "POST",
       data: formData,
       headers: {
-        'X-Upload-Id': uploadId,
-        'X-Chunk-Index': chunkIndex
+        "X-Upload-Id": uploadId,
+        "X-Chunk-Index": chunkIndex,
       },
     });
   } catch (error) {
-    console.log
+    console.log;
   }
 };
 
@@ -106,23 +106,29 @@ export const finalizeUpload = async (uploadId, filetype) => {
       "Content-Type": "application/json",
     },
     data: JSON.stringify({
-      uploadId, filetype
+      uploadId,
+      filetype,
     }),
   });
-  return response.data
+  return response.data;
 };
 
-export const getList = async (fileName, fileType) => {
-  fileType == 'c' ? fileType = "csv" : fileType = "json";
-  const response = await AxiosInstance.request({
-    url: "/airdrop/loadlist",
-    method: "POST",
-    headers:{
-      "Content-Type": "application/json",
-    },
-    data: {
-      fileName,
-      fileType
-    }
-  })
-}
+export const loadList = async (fileName, fileType) => {
+  fileType == "c" ? (fileType = "csv") : (fileType = "json");
+  try {
+    const response = await AxiosInstance.request({
+      url: "/airdrop/loadlist",
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: {
+        fileName,
+        fileType,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
