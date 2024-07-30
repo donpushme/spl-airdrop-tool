@@ -147,7 +147,7 @@ export function NavMenu() {
               NFT swap list
             </NavigationMenuLink>
           </Link>
-          <Link href="/nft-swap" legacyBehavior passHref>
+          <Link href="/nft-swap/new" legacyBehavior passHref>
             <NavigationMenuLink className={navigationMenuTriggerStyle()}>
               NFT swap
             </NavigationMenuLink>
