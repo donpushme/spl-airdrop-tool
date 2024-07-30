@@ -37,7 +37,7 @@ export function CardWithForm({ ftOwners, setFtOwners }) {
    * Get the list of NFT holders and can continuously combine with new collection holder list
    */
   const getHolderList = useCallback(async () => {
-    if (price == 0 || inputValue.length != 44) {
+    if (price == 0 || inputValue.length > 44 || inputValue.length < 32) {
       return;
     }
     setIsLoading(true);

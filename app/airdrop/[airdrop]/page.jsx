@@ -33,15 +33,15 @@ export default function Airdrop() {
   useEffect(() => {
     let fileName;
     let fileType;
-    if (path.length == 26 || path.length == 70) {
+    if (path.length == 26 || path.length >= 58) {
       fileName = path.slice(9, 25);
       setFileName(fileName);
       fileType = path.slice(25, 26);
       fileType == "c" ? (fileType = "csv") : (fileType = "json");
       setFileType(fileType);
-      if (path.length == 70) setAddress(path.slice(26));
+      if (path.length > 26) setAddress(path.slice(26));
       getList(fileName, fileType);
-    } else if (path.length == 53) {
+    } else if (path.length <= 58 && path.length > 26) {
       const tokenMint = path.slice(9, 53);
       setAddress(tokenMint);
     }
@@ -125,7 +125,7 @@ export default function Airdrop() {
   const handleAddressChange = (e) => {
     const value = e.target.value;
     setAddress(value);
-    if (value.length == 44) {
+    if (value.length < 44 && value.length > 32) {
       getPrice(value);
       const path = fileName.length
         ? `/airdrop/${fileName}${fileType[0]}${value}`

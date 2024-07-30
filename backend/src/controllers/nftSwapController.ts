@@ -10,7 +10,7 @@ import { Request, Response } from 'express'
 const getProposal = expressAsyncHandler(async (req: AuthRequest, res: Response) => {
   const user = req.user
   console.log(user)
-  const pending = await NFTSwap.find({ userId1: user.id, status: Status.Pending });
+  const pending = await NFTSwap.find({ userId1: user.walletAddress, status: Status.Pending });
   const proposed = await NFTSwap.find({ userId2: user.walletAddress, status: Status.Pending })
   res.status(200).json({ success: true, data: { pending, proposed } })
 })
@@ -22,7 +22,7 @@ const getProposal = expressAsyncHandler(async (req: AuthRequest, res: Response) 
 const setProposal = expressAsyncHandler(async (req: AuthRequest, res: Response) => {
   const { address, nfts } = req.body;
   const user = req.user;
-  const proposal = new NFTSwap({ userId1: user.id, nft1: nfts, userId2: address, status: Status.Pending });
+  const proposal = new NFTSwap({ userId1: user.walletAddress, nft1: nfts, userId2: address, status: Status.Pending });
   const result = await proposal.save()
   res.status(200).json({ success: true })
 })
