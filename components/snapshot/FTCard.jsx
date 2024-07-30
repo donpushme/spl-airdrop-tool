@@ -93,7 +93,7 @@ export function CardWithForm({ ftOwners, setFtOwners }) {
   }, [ftOwners]);
 
   return (
-    <Card className="w-[700px] mx-auto mb-12 border-green">
+    <Card className="w-[900px] mx-auto mb-12 hover:border-green">
       <CardHeader>
         <CardTitle>TOKEN SNAPSHOT</CardTitle>
         <CardDescription>
@@ -106,7 +106,7 @@ export function CardWithForm({ ftOwners, setFtOwners }) {
             <div className="flex flex-col space-y-1.5">
               <Label htmlFor="name">Address</Label>
               <Input
-                className="border-green"
+                className="hover:border-green"
                 id="name"
                 placeholder="Address here"
                 value={inputValue}

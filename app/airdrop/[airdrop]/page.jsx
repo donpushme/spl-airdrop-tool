@@ -11,17 +11,20 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { uploadChunk, finalizeUpload } from "@/action";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { loadListbyChunks } from "@/action";
+import { loadListbyChunks, airdrop, uploadChunk, finalizeUpload } from "@/action";
 import { getTokenPrice } from "@/lib/ftSnapshot";
-import FTOwnerTable from "@/components/airdrop/FTOwberTable";
+import AirdropTable from "@/components/airdrop/AirdropTable";
+import { useModalContext } from "@/contexts/ModalContext";
 
 export default function Airdrop() {
   const path = usePathname();
+  const { openWalletGenModal } = useModalContext();
+  const { wallet, setWallet } = useModalContext();
   const [list, setList] = useState([]);
+  const [fileName, setFileName] = useState("");
+  const [fileType, setFileType] = useState("");
   const [amountPerEach, setAmountPerEach] = useState("");
   const [totalAmount, setTotalAmount] = useState("");
   const [price, setPrice] = useState(null);
@@ -30,18 +33,23 @@ export default function Airdrop() {
   useEffect(() => {
     let fileName;
     let fileType;
-    if (!path.includes("inputfile")) {
-      console.log(path);
-      fileName = path.slice(9).slice(0, 16);
-      fileType = path[path.length - 1];
+    if (path.length == 26 || path.length == 70) {
+      fileName = path.slice(9, 25);
+      setFileName(fileName);
+      fileType = path.slice(25, 26);
       fileType == "c" ? (fileType = "csv") : (fileType = "json");
+      setFileType(fileType);
+      if (path.length == 70) setAddress(path.slice(26));
       getList(fileName, fileType);
+    } else if (path.length == 53) {
+      const tokenMint = path.slice(9, 53);
+      setAddress(tokenMint);
     }
   }, []);
 
   const getList = async (fileName, fileType) => {
     const data = await loadListbyChunks(fileName, fileType);
-    const list = data
+    const list = data;
     if (list.length) setList(list);
   };
 
@@ -64,8 +72,6 @@ export default function Airdrop() {
       let chunkIndex = 0;
       while (start < file.size) {
         const chunk = file.slice(start, start + chunkSize);
-        console.log(chunk);
-        console.log(file);
         await uploadChunk(chunk, uploadId, chunkIndex);
         start += chunkSize;
         chunkIndex++;
@@ -73,12 +79,17 @@ export default function Airdrop() {
 
       // Finalize the upload
       try {
-        const { success, message, fileName } = await finalizeUpload( uploadId, fileType );
+        const { success, message, fileName } = await finalizeUpload(
+          uploadId,
+          fileType
+        );
         window.history.replaceState(
           {},
           "",
-          `/airdrop/${fileName}${fileType[0]}`
+          `/airdrop/${fileName}${fileType[0]}${address}`
         );
+        setFileName(fileName)
+        setFileType(fileType)
         getList(fileName, fileType);
       } catch (error) {
         console.log(error);
@@ -116,32 +127,42 @@ export default function Airdrop() {
     setAddress(value);
     if (value.length == 44) {
       getPrice(value);
+      const path = fileName.length
+        ? `/airdrop/${fileName}${fileType[0]}${value}`
+        : `/airdrop/${value}`;
+      window.history.replaceState({}, "", path);
+    } else {
+      setPrice(null);
+      const path = fileName.length
+        ? `/airdrop/${fileName}${fileType[0]}`
+        : `/airdrop/inputfile`;
+      window.history.replaceState({}, "", path);
     }
   };
 
+  const generateWallet = () => {
+    openWalletGenModal();
+  };
+
+  const handleAirdrop = () => {
+    const response = airdrop(fileName, fileType, address, wallet, {amountPerEach, totalAmount})
+    console.log(response)
+  }
+
   return (
     <div>
-      <Tabs defaultValue="default" className="w-[900px]">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="default">To list of holders</TabsTrigger>
-          <TabsTrigger value="singe_collection">
-            For single NFT collection
-          </TabsTrigger>
-          <TabsTrigger value="combined_collection">
-            For multi-NFT collection
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="default">
+      <div defaultValue="default" className="w-[900px]">
+        <div value="default">
           <Card>
             <CardHeader>
-              <CardTitle>Simple airdrop</CardTitle>
+              <CardTitle>Airdrop</CardTitle>
               <CardDescription>
                 You can airdrop your token to the list of wallet account.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
               <div className="space-y-1">
-                <Label htmlFor="name">You token address</Label>
+                <Label htmlFor="name">Token Address</Label>
                 <Input
                   id="address"
                   placeholder="Input the token address here"
@@ -190,134 +211,18 @@ export default function Airdrop() {
               )}
             </CardContent>
             <CardFooter>
-              <Button>Airdrop</Button>
-            </CardFooter>
-          </Card>
-        </TabsContent>
-        <TabsContent value="singe_collection">
-          <Card>
-            <CardHeader>
-              <CardTitle>Airdrop to Collection</CardTitle>
-              <CardDescription>
-                You can airdrop your token to the list of wallet account.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="space-y-1">
-                <Label htmlFor="name">You token address</Label>
-                <Input
-                  id="address"
-                  placeholder="Input the token address here"
-                />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="username">Collection</Label>
-                {list.length > 0 ? (
-                  <Button
-                    className="block"
-                    onClick={() => {
-                      setList([]);
-                    }}
-                  >
-                    New
-                  </Button>
-                ) : (
-                  <Input id="wallet_list" type="file" onChange={onChooseFile} />
-                )}
-              </div>
-              {price && (
-                <div className="flex justify-between gap-2 flex-col md:flex-row">
-                  <div className="my-0">
-                    <Label htmlFor="amount_per_each">
-                      Amount per each wallet
-                    </Label>
-                    <Input
-                      id="amount_per_each"
-                      type="text"
-                      value={amountPerEach}
-                      onChange={handleAmountPerEachChange}
-                    />
-                  </div>
-                  <div className="my-0">
-                    <Label htmlFor="totoal_amount">Total Amount</Label>
-                    <Input
-                      id="totoal_amount"
-                      type="text"
-                      value={totalAmount}
-                      onChange={handleTotalAmountChange}
-                    />
-                  </div>
-                </div>
+              {wallet.length == 0 ? (
+                <Button onClick={generateWallet}>
+                  Generate temporay wallet
+                </Button>
+              ) : (
+                <Button onClick={handleAirdrop}>Airdrop</Button>
               )}
-            </CardContent>
-            <CardFooter>
-              <Button>Airdrop</Button>
             </CardFooter>
           </Card>
-        </TabsContent>
-        <TabsContent value="combined_collection">
-          <Card>
-            <CardHeader>
-              <CardTitle>Muli-airdrop</CardTitle>
-              <CardDescription>
-                You can airdrop your token to the list of wallet account.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="space-y-1">
-                <Label htmlFor="name">You token address</Label>
-                <Input
-                  id="address"
-                  placeholder="Input the token address here"
-                />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="username">Wallet list</Label>
-                {list.length > 0 ? (
-                  <Button
-                    className="block"
-                    onClick={() => {
-                      setList([]);
-                    }}
-                  >
-                    New
-                  </Button>
-                ) : (
-                  <Input id="wallet_list" type="file" onChange={onChooseFile} />
-                )}
-              </div>
-              {price && (
-                <div className="flex justify-between gap-2 flex-col md:flex-row">
-                  <div className="my-0">
-                    <Label htmlFor="amount_per_each">
-                      Amount per each wallet
-                    </Label>
-                    <Input
-                      id="amount_per_each"
-                      type="text"
-                      value={amountPerEach}
-                      onChange={handleAmountPerEachChange}
-                    />
-                  </div>
-                  <div className="my-0">
-                    <Label htmlFor="totoal_amount">Total Amount</Label>
-                    <Input
-                      id="totoal_amount"
-                      type="text"
-                      value={totalAmount}
-                      onChange={handleTotalAmountChange}
-                    />
-                  </div>
-                </div>
-              )}
-            </CardContent>
-            <CardFooter>
-              <Button>Airdrop</Button>
-            </CardFooter>
-          </Card>
-        </TabsContent>
-      </Tabs>
-      <FTOwnerTable list={list}/>
+        </div>
+      </div>
+      <AirdropTable list={list} />
     </div>
   );
 }

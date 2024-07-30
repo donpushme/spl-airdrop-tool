@@ -67,18 +67,6 @@ export const signIn = async (publicKey, wallet) => {
   }
 };
 
-export const fileUpload = async (data, type) => {
-  const response = await AxiosInstance.request({
-    method: "post",
-    url: "/airdrop/list-upload",
-    headers: {
-      Authorization: `Bearer ${window.localStorage.getItem("token")}`,
-    },
-    data: { data, type },
-  });
-  console.log(response);
-};
-
 export const uploadChunk = async (chunk, uploadId, chunkIndex) => {
   const formData = new FormData();
   formData.set("file", chunk);
@@ -136,7 +124,7 @@ const fetchPaginatedData = async (
   fileName,
   fileType,
   page = 1,
-  perPage = 5000
+  perPage = 10000
 ) => {
   try {
     const response = await AxiosInstance.request({
@@ -166,7 +154,7 @@ export const loadListbyChunks = async (fileName, fileType) => {
   try {
     do {
       data = await fetchPaginatedData(fileName, fileType, page);
-      data = data.paginatedData
+      data = data.paginatedData;
       allData = allData.concat(data);
       page++;
     } while (data.length > 0);
@@ -175,3 +163,43 @@ export const loadListbyChunks = async (fileName, fileType) => {
   }
   return allData;
 };
+
+export const airdrop = (fileName, fileType, tokenMint, wallet, amount) => {
+  const data = { fileName, fileType, tokenMint, wallet, amount };
+  const response = AxiosInstance.request({
+    url: "/airdrop/transfer",
+    method: "POST",
+    data: data,
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (response.success) return "sent"
+};
+
+
+export const proposeNFTSwap = async (address, nfts) => {
+  const data = {address, nfts}
+  const response = await AxiosInstance.request({
+    url: "/nft-swap/propose",
+    method: "POST",
+    headers : {
+      Authorization: `Bearer ${window.localStorage.getItem("token")}`,
+    },
+    data: data
+  })
+  console.log(response)
+} 
+
+export const getProposal = async () => {
+  const {data} = await AxiosInstance.request({
+    url: "/nft-swap",
+    method: "GET",
+    headers : {
+      Authorization: `Bearer ${window.localStorage.getItem("token")}`,
+    },
+  })
+  
+  if(data.success) return data.data
+  else return {}
+}

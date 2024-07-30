@@ -4,7 +4,7 @@ import { useAppContext } from "@/contexts/AppContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { UserRound } from "lucide-react";
+import { UserRound, LogOutIcon, LogInIcon } from "lucide-react";
 import {
   Sheet,
   SheetClose,
@@ -21,17 +21,21 @@ import {
 //   return <div className={`w-[300px] fixed bottom-0 h-[calc(100vh-96px)] border-l p-4 duration-300 ${showRightBar ? "right-0" : "-right-full"}`}>RightBar</div>;
 // }
 
-export default function RightBar() {
+export default function RightBar(props) {
+  const { signIn, signOut, isSigned } = props;
   return (
     <Sheet>
       <SheetTrigger asChild>
         <Button variant="outline" className="border-0 bg-transparent rounded-full">
-          <UserRound />
+          <UserRound /> 
         </Button>
       </SheetTrigger>
       <SheetContent>
         <SheetHeader>
           <SheetTitle>Edit profile</SheetTitle>
+          <div className="flex gap-4">
+            {isSigned ? (<><LogOutIcon onClick={signOut}/>Signout</>) : (<><LogInIcon onClick={signIn}/>Siginin</>)}
+          </div>
           <SheetDescription>
             Make changes to your profile here. Click save when you are done.
           </SheetDescription>

@@ -90,7 +90,7 @@ export default function Snapshot() {
           <Input
             id="address"
             type="text"
-            className="border-green"
+            className="hover:border-green"
             placeholder="Input address here ..."
             value={inputValue}
             onChange={handleChange}

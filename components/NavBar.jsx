@@ -17,19 +17,19 @@ import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { useWallet } from "@solana/wallet-adapter-react";
 import WalletModal from "@/components/WalletModal";
 import { AlertCom } from "@/components/AlertCom";
-import RightBar from "@/components/RightBar"
+import RightBar from "@/components/RightBar";
 import { useAppContext } from "@/contexts/AppContext";
 import { useAlertContext } from "@/contexts/AlertContext";
 import { SuccessAlert, ErrorAlert } from "@/lib/alerts";
 import { useTheme } from "next-themes";
 import { NavMenu } from "./NavMenu";
 import { signIn, testSign } from "@/action";
-import Logo from './Logo'
+import Logo from "./Logo";
+import WalletGenModal from "./airdrop/WalletGenModal";
 
 export default function NavBar({ className }) {
   const [error, setError] = useState(null);
   const wallet = useWallet();
-  const { setVisible: setModalVisible } = useWalletModal();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { alert, setAlert } = useAlertContext();
   const { isSigned, setIsSigned, setShowSideBar, setMouseTrack } =
@@ -43,11 +43,7 @@ export default function NavBar({ className }) {
     publicKey,
     walletIcon,
     walletName,
-  } = useWalletMultiButton({
-    onSelectWallet() {
-      setModalVisible(true);
-    },
-  });
+  } = useWalletMultiButton({});
 
   const openModal = () => {
     setIsModalOpen(true);
@@ -112,6 +108,7 @@ export default function NavBar({ className }) {
 
   return (
     <>
+      <WalletGenModal />
       <AlertCom />
       <nav
         className={`${className} fixed w-full flex justify-between border-border h-20 items-center px-4 backdrop-blur-sm bg-primary-background/30 border-b`}
@@ -154,7 +151,7 @@ export default function NavBar({ className }) {
           }}
         /> */}
           {/* <ProfileDropDown sign={sign} signOut={signOut} isSigned={isSigned} /> */}
-          <RightBar/>
+          <RightBar signIn={sign} signOut={signOut} isSigned={isSigned}/>
         </div>
       </nav>
       <WalletModal isOpen={isModalOpen} onClose={closeModal} />

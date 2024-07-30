@@ -15,6 +15,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import { AlertProvider } from "@/contexts/AlertContext";
 import { AppProvider } from "@/contexts/AppContext";
+import { ModalProvider } from "@/contexts/ModalContext";
 
 export default function Providers({ children }) {
   const network = WalletAdapterNetwork.Mainnet;
@@ -29,16 +30,18 @@ export default function Providers({ children }) {
       <ConnectionProvider endpoint={endpoint}>
         <WalletProvider wallets={wallets} autoConnect>
           <AppProvider>
-            <AlertProvider>
-              <ThemeProvider
-                attribute="class"
-                defaultTheme="dark"
-                enableSystem
-                disableTransitionOnChange
-              >
-                {children}
-              </ThemeProvider>
-            </AlertProvider>
+            <ModalProvider>
+              <AlertProvider>
+                <ThemeProvider
+                  attribute="class"
+                  defaultTheme="dark"
+                  enableSystem
+                  disableTransitionOnChange
+                >
+                  {children}
+                </ThemeProvider>
+              </AlertProvider>
+            </ModalProvider>
           </AppProvider>
         </WalletProvider>
       </ConnectionProvider>

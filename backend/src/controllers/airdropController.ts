@@ -5,6 +5,7 @@ import { uuid } from "../utils/generator";
 import path from 'path';
 import { CustomError, BadRequest } from "../errors";
 import Papa from 'papaparse'
+import { tokenTransfer } from "../utils/solana";
 
 /**
  * This is for saving big list file by chunk
@@ -36,11 +37,9 @@ const chunkUpload = expressAsyncHandler(async (req: Request, res: Response) => {
  */
 const finalUpload = (req: Request, res: Response) => {
   const { uploadId, fileType } = req.body;
-  console.log(uploadId, fileType)
   const destinationPath = path.join('uploads', uploadId);
   const randomFileName = uuid(); // Randomly generated file name with .data extension
   const finalFilePath = path.join('uploads', `${randomFileName}.${fileType}`);
-  console.log(finalFilePath)
 
   const writeStream = fs.createWriteStream(finalFilePath);
   const chunks = fs.readdirSync(destinationPath).sort();
@@ -64,14 +63,14 @@ const finalUpload = (req: Request, res: Response) => {
  * @param res 
  */
 const loadList = expressAsyncHandler(async (req: Request, res: Response) => {
-  const {page, perPage} = req.body;
+  const { page, perPage } = req.body;
   const start = (page - 1) * perPage;
   const end = start + perPage;
   const { fileName, fileType } = req.body;
   const dir = `uploads\\${fileName}.${fileType}`
   console.log(dir)
   const data = await readListFromFile(dir);
-  
+
   const paginatedData = data.slice(start, end);
 
   if (data) res.status(200).json({ paginatedData })
@@ -105,4 +104,16 @@ const readListFromFile = async (dir: string) => {
   }
 }
 
-export { chunkUpload, finalUpload, loadList }
+const transferToken = expressAsyncHandler(async (req: Request, res: Response) => {
+  const { fileName, fileType, tokenMint, wallet, amount } = req.body
+  const dir = `uploads/${fileName}.${fileType}`
+  console.log(dir, wallet)
+  const list = await readListFromFile(dir)
+  console.log(list)
+  // list.map((item:any, index:number) => {
+  //   tokenTransfer(wallet, item, tokenMint, amount.amountPerEach)
+  // })
+  res.status(200).json({success:true})
+})
+
+export { chunkUpload, finalUpload, loadList, transferToken }

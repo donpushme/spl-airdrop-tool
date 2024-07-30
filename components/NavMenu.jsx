@@ -141,10 +141,15 @@ export function NavMenu() {
             </ul>
           </NavigationMenuContent>
         </NavigationMenuItem>
-        <NavigationMenuItem>
-          <Link href="/docs" legacyBehavior passHref>
+        <NavigationMenuItem className="flex gap-2">
+          <Link href="/nft-swap" legacyBehavior passHref>
             <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-              Documentation
+              NFT swap list
+            </NavigationMenuLink>
+          </Link>
+          <Link href="/nft-swap" legacyBehavior passHref>
+            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+              NFT swap
             </NavigationMenuLink>
           </Link>
         </NavigationMenuItem>

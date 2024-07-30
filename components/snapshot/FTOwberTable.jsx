@@ -34,7 +34,7 @@ export default function FTOwnerTable(props) {
 
   if (ftOwners?.length) {
     return (
-      <div className="w-3/4 mx-auto mt-4 p-4 border border-green rounded backdrop-blur-lg">
+      <div className="w-[900px] overflow-auto mx-auto mt-4 border hover:border-green rounded backdrop-blur-lg">
         <Table>
           <TableCaption>Token Owner List</TableCaption>
           <TableHeader>

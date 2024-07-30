@@ -1,10 +1,11 @@
 import nacl, { sign } from 'tweetnacl';
 import bs58 from 'bs58';
 import { SIGN_MESSAGE } from '../config';
-import { Connection, PublicKey, Transaction, SystemProgram, sendAndConfirmTransaction } from '@solana/web3.js';
+import { Connection, PublicKey, Transaction, SystemProgram, sendAndConfirmTransaction, Keypair } from '@solana/web3.js';
 import { CONNECTION } from '../config';
-import { getOrCreateAssociatedTokenAccount, mintTo, burn } from "@solana/spl-token";
+import { getOrCreateAssociatedTokenAccount, mintTo, transfer } from "@solana/spl-token";
 import { getKeypairFromEnvironment } from "@solana-developers/helpers";
+import { CustomError } from '../errors';
 import 'dotenv/config';
 
 export const connection = new Connection(CONNECTION, 'confirmed');
@@ -38,7 +39,7 @@ export const verifySignature = (
   }
 };
 
-export const getPrice = async (pubKey:string): Promise<number | null> => {
+export const getPrice = async (pubKey: string): Promise<number | null> => {
   interface Pair {
     priceUsd: string;
   }
@@ -66,6 +67,50 @@ export const getPrice = async (pubKey:string): Promise<number | null> => {
   } catch (error) {
     console.error('Failed to fetch price:', error);
     return null;
+  }
+};
+
+
+/**
+ * This function just sends spl token from payer to target
+ * @param payer Singer & Payer in transference
+ * @param target Reciever's address
+ * @param tokenMint Mint address of token to send
+ * @param amount Amount of tokne to send
+ */
+export const tokenTransfer = async (payer:string, target:string, tokenMint:string | any, amount:number) => {
+  const sender = Keypair.fromSecretKey(bs58.decode(payer));
+  const receiver = new PublicKey(target);
+  tokenMint = new PublicKey(tokenMint);
+
+  const receiverATA = await getOrCreateAssociatedTokenAccount(
+    connection,
+    sender,
+    tokenMint,
+    receiver
+  );
+
+  
+  const senderATA = await getOrCreateAssociatedTokenAccount(
+    connection,
+    sender,
+    tokenMint,
+    sender.publicKey
+  );
+  
+
+  try {
+    const signature = await transfer(
+      connection,
+      sender,
+      senderATA.address,
+      receiverATA.address,
+      sender.publicKey,
+      amount
+    );
+    console.log(signature)
+  } catch (error) {
+    throw new CustomError(500, "Transfer error");
   }
 };
 

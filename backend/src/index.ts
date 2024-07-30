@@ -9,6 +9,7 @@ import bodyParser from 'body-parser';
 import cookieParser from "cookie-parser";
 import cors from 'cors';
 import airdropRouter from './routes/airdrop';
+import nftSwapRouter from './routes/nftSwap';
 
 const app = express();
 app.use(cors());
@@ -22,6 +23,7 @@ app.get("/", authMiddleware, (req: AuthRequest, res: Response) => {
 
 app.use("/auth", authRouter);
 app.use("/airdrop", airdropRouter);
+app.use("/nft-swap", authMiddleware, nftSwapRouter);
 
 //For catching 404 Error
 app.use(notFoundHandler);

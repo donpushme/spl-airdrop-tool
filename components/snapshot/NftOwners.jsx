@@ -36,7 +36,7 @@ export default function NftOwners(props) {
   if (owners?.length) {
     const properties = Object.keys(owners[0]);
     return (
-      <div className="w-3/4 mx-auto mt-4 p-4 border border-green rounded">
+      <div className="w-[900px] overflow-auto mx-auto mt-4 border hover:border-green rounded">
         <Table>
           <TableCaption>NFT Holder List</TableCaption>
           <TableHeader>

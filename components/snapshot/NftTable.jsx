@@ -34,7 +34,7 @@ export default function NftTble(props) {
 
   if (nfts?.length) {
     return (
-      <div className="w-3/4 mx-auto mt-4 p-4 border border-green rounded">
+      <div className="w-[900px] overflow-auto mx-auto mt-4 border hover:border-green rounded">
         <Table>
           <TableCaption>NFT List</TableCaption>
           <TableHeader>
