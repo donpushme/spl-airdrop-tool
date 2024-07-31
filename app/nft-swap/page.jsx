@@ -10,7 +10,8 @@ import dynamic from "next/dynamic";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletMultiButton } from "@solana/wallet-adapter-base-ui";
 import bs58 from "bs58";
-import SwapListTable from "@/components/nftswap/SwapListTable"
+import SendTable from "@/components/nftswap/SendTable";
+import ReceiveTable from "@/components/nftswap/ReceiveTable";
 
 const NftTicket = dynamic(() => import("@/components/nftswap/NFTticket"), {
   ssr: false,
@@ -21,8 +22,8 @@ const NftTicket = dynamic(() => import("@/components/nftswap/NFTticket"), {
 
 export default function NFTSwap() {
   const wallet = useWallet();
-  const [pending, setPending] = useState([])
-  const [proposed, setProposed] = useState([])
+  const [pending, setPending] = useState([]);
+  const [proposed, setProposed] = useState([]);
 
   const loadAssets = useCallback(async () => {
     if (wallet.publicKey != null) {
@@ -30,6 +31,7 @@ export default function NFTSwap() {
         const proposal = await getProposal();
         setPending(proposal.pending);
         setProposed(proposal.proposed);
+        console.log(proposal)
       } catch (error) {
         console.log(error);
       }
@@ -42,10 +44,16 @@ export default function NFTSwap() {
 
   return (
     <div className="w-1/2 mx-auto">
-      <div className="border rounded-lg">
-        <SwapListTable list={pending}/>
-      </div>
-
+      {pending.length > 0 && (
+        <div className="border rounded-lg">
+          <SendTable list={pending} />
+        </div>
+      )}
+      {proposed.length > 0 && (
+        <div className="border rounded-lg mt-8">
+          <ReceiveTable list={proposed} />
+        </div>
+      )}
     </div>
   );
 }

@@ -13,7 +13,7 @@ export interface INFTSwap extends Document {
   userId2: string;
   nft2: any[]; // Define the type more explicitly if possible
   status: number;
-  // date: Date
+  date: Date
 }
 
 // Create the schema for the NFTSwap model
@@ -23,7 +23,7 @@ const NFTSwapSchema: Schema = new Schema({
   userId2: { type: String, required:true},
   nft2: { type: [Schema.Types.Mixed]}, // Array of mixed types
   status: {type: Number, required:true },
-  // date: { type: Date, required: true, default: Date.now }
+  date: { type: Date, required: true, default: Date.now }
 });
 
 // Create and export the model

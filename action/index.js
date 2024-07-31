@@ -191,9 +191,23 @@ export const proposeNFTSwap = async (address, nfts) => {
   console.log(response)
 } 
 
-export const getProposal = async () => {
+export const updateProposal = async (id, userId1, nft1, userId2, nft2, status) => {
+  const data = {id, userId1, nft1, userId2, nft2, status}
+  const response = await AxiosInstance.request({
+    url: "/nft-swap/update",
+    method: "POST",
+    headers : {
+      Authorization: `Bearer ${window.localStorage.getItem("token")}`,
+    },
+    data: data
+  })
+  console.log(response)
+} 
+
+export const getProposal = async (id) => {
+  const url = id ? `/nft-swap/${id}` : "/nft-swap"
   const {data} = await AxiosInstance.request({
-    url: "/nft-swap",
+    url: url,
     method: "GET",
     headers : {
       Authorization: `Bearer ${window.localStorage.getItem("token")}`,
