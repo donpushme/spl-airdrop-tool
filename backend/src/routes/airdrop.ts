@@ -9,6 +9,6 @@ const airdropRouter = Router()
 airdropRouter.post("/upload-endpoint", upload.single('file'), chunkUpload);
 airdropRouter.post("/final-upload", finalUpload);
 airdropRouter.post("/loadlist", loadList);
-airdropRouter.post("/transfer", transferToken)
+airdropRouter.post("/transfer", transferToken);
 
 export default airdropRouter;

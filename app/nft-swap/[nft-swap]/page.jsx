@@ -1,15 +1,23 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { getWalletAssets } from "@/lib/solana";
-import { Input } from "@/components/ui/input";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { getWalletAssets, swapNFT } from "@/lib/solana";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { proposeNFTSwap, getProposal, updateProposal } from "@/action";
+import {
+  getProposal,
+  updateProposal,
+  updateConfirm,
+  getConfirm,
+  deleteProposal,
+} from "@/action";
 import dynamic from "next/dynamic";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { usePathname } from "next/navigation";
 import { ArrowUpDownIcon } from "lucide-react";
+import { io } from "socket.io-client";
+import { API_URL } from "@/config";
+import { useRouter } from "next/navigation";
 
 const NftTicket = dynamic(() => import("@/components/nftswap/NFTticket"), {
   ssr: false,
@@ -20,6 +28,7 @@ const NftTicket = dynamic(() => import("@/components/nftswap/NFTticket"), {
 
 export default function NFTSwap() {
   const path = usePathname();
+  const router = useRouter();
   const [nfts, setNfts] = useState([]);
   const wallet = useWallet();
   const [targetAddress, setTargetAddress] = useState("");
@@ -27,61 +36,99 @@ export default function NFTSwap() {
   const [proposedNFT, setProposedNFT] = useState([]);
   const [proposalId, setProposalId] = useState("");
   const [isSender, setIsSender] = useState(false);
+  const [confirm, setConfirm] = useState([false, false]);
+  const socket = useMemo(() => io(API_URL), []);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const loadConfirm = async () => {
+    const newConfirm = await getConfirm(proposalId);
+    setConfirm(newConfirm);
+  };
 
   const loadAssets = useCallback(async () => {
-    if (wallet.publicKey != null && !nfts.length && !nftToSwap.length) {
+    if (wallet.publicKey != null) {
       try {
         const proposal = await getProposal(path.split("/nft-swap/")[1]);
-        let userNft
+        let userNft;
         if (proposal.userId1 != wallet.publicKey) {
-          setIsSender(false)
+          setIsSender(false);
           setProposedNFT(proposal.nft1);
           setTargetAddress(proposal.userId1);
           setNftToSwap(proposal.nft2);
-          setProposalId(proposal._id);
-          userNft = proposal.nft2
+          userNft = proposal.nft2;
         }
         if (proposal.userId1 == wallet.publicKey) {
-          setIsSender(true)
+          setIsSender(true);
           setProposedNFT(proposal.nft2);
           setTargetAddress(proposal.userId2);
           setNftToSwap(proposal.nft1);
-          setProposalId(proposal._id);
-          userNft = proposal.nft1
+          userNft = proposal.nft1;
         }
+        setProposalId(proposal._id);
+        setConfirm([proposal.confirm1, proposal.confirm2]);
 
         //Fetch NFTs in connected wallet
         const assets = await getWalletAssets(wallet.publicKey);
         if (assets.length) {
-          console.log(proposal.nft2);
-          console.log(assets);
-
-          const proposalRefer = userNft.reduce((acc, cur) => {
-            acc.push(cur.id);
-            return acc;
-          }, []);
-          console.log(proposalRefer);
-
-          const assetsRefer = assets.reduce((acc, cur) => {
-            if (proposalRefer.indexOf(cur.id) == -1) acc.push(cur);
-            return acc;
-          }, []);
+          const proposalRefer = userNft.map((nft) => nft.id);
+          const assetsRefer = assets.filter(
+            (asset) => !proposalRefer.includes(asset.id)
+          );
           setNfts(assetsRefer);
         }
       } catch (error) {
         console.log(error);
       }
     }
-  }, [wallet]);
+  }, [wallet.publicKey, path]);
+
+  useEffect(() => {
+    // Set up socket listeners once when component mounts
+    socket.on("updateProposal", () => {
+      loadAssets(); // Call the function to load assets
+    });
+
+    socket.on("swap", async () => {
+      swap();
+    });
+
+    socket.on("updateConfirm", () => {
+      loadConfirm(); // Call the function to load confirmation status
+    });
+
+    // Clean up the socket listeners on component unmount
+    return () => {
+      socket.off("swap");
+      socket.off("updateProposal");
+      socket.off("updateConfirm");
+    };
+  }, [socket, loadAssets, loadConfirm]);
 
   useEffect(() => {
     loadAssets();
   }, [loadAssets]);
 
-  const propose = () => {
+  const update = () => {
     if (!nftToSwap || nftToSwap.length == 0) return;
-    if(isSender) updateProposal(proposalId, wallet.publicKey, nftToSwap, targetAddress, proposedNFT, 0);
-    else updateProposal(proposalId, targeAddress, proposedNFT, wallet.publicKey, nftToSwap, 1)
+    if (isSender)
+      updateProposal(
+        proposalId,
+        wallet.publicKey,
+        nftToSwap,
+        targetAddress,
+        proposedNFT,
+        [true, confirm[1]]
+      );
+    else
+      updateProposal(
+        proposalId,
+        targetAddress,
+        proposedNFT,
+        wallet.publicKey,
+        nftToSwap,
+        [confirm[0], true]
+      );
+    socket.emit("updateProposal");
   };
 
   const selectNFTToSwap = (e) => {
@@ -93,6 +140,7 @@ export default function NFTSwap() {
       return acc;
     }, []);
     setNfts(assets);
+    confirmChange();
   };
 
   const selectNFTToCancel = (e) => {
@@ -104,11 +152,30 @@ export default function NFTSwap() {
       return acc;
     }, []);
     setNftToSwap(assets);
+    confirmChange();
   };
 
-  const update = () => {
-
+  const confirmChange = () => {
+    if (isSender) {
+      setConfirm((pre) => {
+        updateConfirm(proposalId, [false, pre[1]]);
+        return [false, pre[1]];
+      });
+    } else {
+      setConfirm((pre) => {
+        updateConfirm(proposalId, [pre[0], false]);
+        return [pre[0], false];
+      });
+    }
+    socket.emit("updateConfirm");
   };
+
+  const swap = async () => {
+    await swapNFT(wallet, nftToSwap, targetAddress);
+    if(isSender) await deleteProposal(proposalId)
+    router.push("/nft-swap");
+  };
+
   return (
     <div className="w-1/2">
       <div>
@@ -161,15 +228,14 @@ export default function NFTSwap() {
           })}
         </div>
       </div>
-      <div className="flex justify-center items-center w-8 h-8 rounded-full bg-foreground scale-150 mx-auto">
-        <ArrowUpDownIcon className="text-black" />
+      <div className="flex justify-center items-center w-8 h-8 rounded-full bg-foreground/20 scale-150 mx-auto">
+        <ArrowUpDownIcon className="text-background" />
       </div>
       <div className="mb-8">
         <div className="flex flex-wrap min-h-[82px] w-full border hover:border-green gap-2 rounded-lg p-4">
           {proposedNFT.map((nft, index) => {
             const imageURI = nft.image;
             const id = nft.id;
-            console.log(imageURI);
             return <NftTicket src={imageURI} key={index} id={id} />;
           })}
         </div>
@@ -180,10 +246,20 @@ export default function NFTSwap() {
           {targetAddress}
         </div>
       </div>
-      <div className="my-8">
-        <Button className="border hover:border-green" onClick={propose}>
-          Propose
-        </Button>
+      <div className="my-8 flex">
+        {confirm[0] && confirm[1] ? (
+          <Button onClick={swap}>Swap</Button>
+        ) : (
+          <Button
+            className="border hover:border-green"
+            onClick={update}
+            disabled={isSender ? confirm[0] : confirm[1]}
+          >
+            {(isSender && confirm[0]) || (!isSender && confirm[1])
+              ? "Wait for other"
+              : "Update and Confirm"}
+          </Button>
+        )}
       </div>
     </div>
   );

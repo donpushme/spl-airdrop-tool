@@ -78,7 +78,7 @@ export function CardWithForm({ ftOwners, setFtOwners }) {
   const handleChange = useCallback(
     (e) => {
       const value = e.target.value;
-      if (value.length == 44) fetchPrice(value);
+      if (value.length >= 32 && value.length <= 44) fetchPrice(value);
       setInputValue(value);
     },
     [setInputValue, fetchPrice]

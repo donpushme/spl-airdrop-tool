@@ -127,7 +127,6 @@ export default function NFTSwap() {
           {nftToSwap.map((nft, index) => {
             const imageURI = nft.image;
             const id = nft.id;
-            console.log(imageURI);
             return (
               <NftTicket
                 src={imageURI}

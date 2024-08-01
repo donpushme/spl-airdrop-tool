@@ -174,46 +174,102 @@ export const airdrop = (fileName, fileType, tokenMint, wallet, amount) => {
       "Content-Type": "application/json",
     },
   });
-  if (response.success) return "sent"
+  if (response.success) return "sent";
 };
 
-
 export const proposeNFTSwap = async (address, nfts) => {
-  const data = {address, nfts}
+  const data = { address, nfts };
   const response = await AxiosInstance.request({
     url: "/nft-swap/propose",
     method: "POST",
-    headers : {
+    headers: {
       Authorization: `Bearer ${window.localStorage.getItem("token")}`,
     },
-    data: data
-  })
-  console.log(response)
-} 
+    data: data,
+  });
+  console.log(response);
+};
 
-export const updateProposal = async (id, userId1, nft1, userId2, nft2, status) => {
-  const data = {id, userId1, nft1, userId2, nft2, status}
+export const updateProposal = async (
+  id,
+  userId1,
+  nft1,
+  userId2,
+  nft2,
+  confirm
+) => {
+  const status = nft1.length > 0 && nft2.length > 0 ? 1 : 0;
+  const data = { id, userId1, nft1, userId2, nft2, status, confirm };
   const response = await AxiosInstance.request({
     url: "/nft-swap/update",
     method: "POST",
-    headers : {
+    headers: {
       Authorization: `Bearer ${window.localStorage.getItem("token")}`,
     },
-    data: data
-  })
-  console.log(response)
-} 
+    data: data,
+  });
+};
 
 export const getProposal = async (id) => {
-  const url = id ? `/nft-swap/${id}` : "/nft-swap"
-  const {data} = await AxiosInstance.request({
+  const url = id ? `/nft-swap/${id}` : "/nft-swap";
+  const { data } = await AxiosInstance.request({
     url: url,
     method: "GET",
-    headers : {
+    headers: {
       Authorization: `Bearer ${window.localStorage.getItem("token")}`,
     },
-  })
-  
-  if(data.success) return data.data
-  else return {}
-}
+  });
+
+  if (data.success) return data.data;
+  else return {};
+};
+
+export const updateConfirm = async (id, confirm) => {
+  const data = { id, confirm };
+  try {
+    const response = await AxiosInstance.request({
+      url: "/nft-swap/update-confirm",
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${window.localStorage.getItem("token")}`,
+      },
+      data: data,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getConfirm = async (id) => {
+  const data = { id };
+  try {
+    const response = await AxiosInstance.request({
+      url: "/nft-swap/confirm",
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${window.localStorage.getItem("token")}`,
+      },
+      data: data,
+    });
+    if (response.data.success) return response.data.confirm;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const deleteProposal = async (id) => {
+  const url = id ? `/nft-swap/${id}` : "/nft-swap";
+  try {
+    const response = await AxiosInstance.request({
+      url: url,
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${window.localStorage.getItem("token")}`,
+      },
+    });
+    if (response.data.success) return true;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+};
