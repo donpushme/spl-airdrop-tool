@@ -144,9 +144,8 @@ export default function Airdrop() {
     openWalletGenModal();
   };
 
-  const handleAirdrop = () => {
+  const handleAirdrop =  () => {
     const response = airdrop(fileName, fileType, address, wallet, {amountPerEach, totalAmount})
-    console.log(response)
   }
 
   return (
