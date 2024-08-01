@@ -3,10 +3,12 @@ import bs58 from 'bs58';
 import { SIGN_MESSAGE } from '../config';
 import { Connection, PublicKey, Transaction, SystemProgram, sendAndConfirmTransaction, Keypair } from '@solana/web3.js';
 import { CONNECTION } from '../config';
-import { getOrCreateAssociatedTokenAccount, mintTo, transfer } from "@solana/spl-token";
+import { getAssociatedTokenAddressSync, createAssociatedTokenAccountInstruction, createTransferInstruction, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { getKeypairFromEnvironment } from "@solana-developers/helpers";
 import { CustomError } from '../errors';
+import { readListFromFile } from '../controllers/airdropController';
 import 'dotenv/config';
+import fs from 'fs'
 
 export const connection = new Connection(CONNECTION, 'confirmed');
 
@@ -70,47 +72,135 @@ export const getPrice = async (pubKey: string): Promise<number | null> => {
   }
 };
 
+interface Holder {
+  owner: string,
+  tx: string,
+}
+
+export const tokenTransfer = async (
+  sender: Keypair,
+  senderATA: PublicKey,
+  targets: Array<Holder>,
+  tokenMint: PublicKey,
+  amount: number
+) => {
+  const successAccounts: Holder[] = []
+  const transaction = new Transaction();
+  targets.forEach(async (element: Holder) => {
+    const receiver = new PublicKey(element.owner);
+
+    const onCurve = PublicKey.isOnCurve(element.owner);
+    if (!onCurve) return
+    successAccounts.push(element)
+
+    let receiverATA = getAssociatedTokenAddressSync(tokenMint, receiver);
+    let receiverATAInfo = await connection.getAccountInfo(receiverATA);
+    console.log(tokenMint.toString(), "==", receiver.toString())
+    let programId = new PublicKey("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL")
+    // let programId = new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
+    if (!receiverATAInfo) {
+      const createATAInstruction = createAssociatedTokenAccountInstruction(
+        sender.publicKey,
+        receiverATA,
+        receiver,
+        tokenMint,
+        // TOKEN_PROGRAM_ID,
+        // programId,
+        // ASSOCIATED_TOKEN_PROGRAM_ID
+      );
+      transaction.add(createATAInstruction);
+    }
+
+    transaction.add(
+      createTransferInstruction(
+        senderATA,
+        receiverATA,
+        sender.publicKey,
+        amount
+      )
+    );
+
+  });
+
+  try {
+
+    const res = await connection.simulateTransaction(
+      transaction,
+      [sender]
+    );
+
+    console.log(res)
+    const signature = await sendAndConfirmTransaction(connection, transaction, [
+      sender,
+    ]);
+
+    const result: Holder[] = successAccounts.reduce((acc: Holder[], cur: Holder) => {
+      acc.push({ ...cur, tx: signature });
+      return acc;
+    }, []);
+    return result;
+  } catch (error) {
+    console.error("Error during token transfer:", error);
+    throw error; // Re-throw to handle it outside
+  }
+};
+
+interface Amount {
+  amountPerEach: number, totalAmount: number
+}
 
 /**
  * This function just sends spl token from payer to target
+ * @param dir File directory saving holders
  * @param payer Singer & Payer in transference
- * @param target Reciever's address
  * @param tokenMint Mint address of token to send
  * @param amount Amount of tokne to send
  */
-export const tokenTransfer = async (payer:string, target:string, tokenMint:string | any, amount:number) => {
-  const sender = Keypair.fromSecretKey(bs58.decode(payer));
-  const receiver = new PublicKey(target);
+export const startTransferToken = async (dir: string, payer: string, tokenMint: string | PublicKey, amount: Amount) => {
+  console.log(connection)
   tokenMint = new PublicKey(tokenMint);
+  const holders = await readListFromFile(dir);
+  // const sender = Keypair.fromSecretKey(bs58.decode(payer));
+  const sender = Keypair.fromSecretKey(bs58.decode("2mzxfz36nQGisfRwxj5tKTijcsNK11oXsNSGKdGnauaFRmD1KafHFsVmZdpMGHzMPB9ZNNqwhowZbrR6Yf81YUV1"));
+  const senderATA = getAssociatedTokenAddressSync(tokenMint, sender.publicKey);
 
-  const receiverATA = await getOrCreateAssociatedTokenAccount(
-    connection,
-    sender,
-    tokenMint,
-    receiver
-  );
+  const totalNum = holders.length;
+  const multiNum = 1;
+  const instructionNum = 6;
+  let loop = Math.ceil(totalNum / multiNum);
+  let index = 0;
+  let totalResult: any[] = [];
 
-  
-  const senderATA = await getOrCreateAssociatedTokenAccount(
-    connection,
-    sender,
-    tokenMint,
-    sender.publicKey
-  );
-  
-
-  try {
-    const signature = await transfer(
-      connection,
-      sender,
-      senderATA.address,
-      receiverATA.address,
-      sender.publicKey,
-      amount
-    );
-    console.log(signature)
-  } catch (error) {
-    throw new CustomError(500, "Transfer error");
+  const tokenAmount = amount.amountPerEach || 1;
+  while (loop > 0) {
+    const request = [];
+    let result = {};
+    for (let i = 0; i < multiNum && index < totalNum; i++) {
+      const element = holders.slice(index, index + instructionNum);
+      request.push(
+        new Promise(async (resolve) => {
+          console.log(`sending transaction for holder ${element}`);
+          const signature = await tokenTransfer(
+            sender,
+            senderATA,
+            element,
+            tokenMint,
+            tokenAmount
+          );
+          console.log(
+            `Get ${signature} from transaction for ${element.toString()}`
+          );
+          result = { owner: element, tx: signature };
+          resolve(result);
+        })
+      );
+      index += instructionNum;
+    }
+    const multiResult = await Promise.all(request);
+    totalResult = [...totalResult, ...multiResult];
+    loop--;
   }
+
+  fs.writeFileSync("tx.json", JSON.stringify(totalResult, null, 2));
 };
 

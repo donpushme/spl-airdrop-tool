@@ -5,7 +5,7 @@ import { uuid } from "../utils/generator";
 import path from 'path';
 import { CustomError, BadRequest } from "../errors";
 import Papa from 'papaparse'
-import { tokenTransfer } from "../utils/solana";
+import { startTransferToken } from "../utils/solana";
 
 /**
  * This is for saving big list file by chunk
@@ -77,7 +77,7 @@ const loadList = expressAsyncHandler(async (req: Request, res: Response) => {
   else throw new CustomError(500, 'Reading file error')
 })
 
-const readListFromFile = async (dir: string) => {
+export const readListFromFile = async (dir: string) => {
   const fileType = dir.split(".")[1];
   if (fileType == 'json') {
     let data = fs.readFileSync(dir);
@@ -107,12 +107,7 @@ const readListFromFile = async (dir: string) => {
 const transferToken = expressAsyncHandler(async (req: Request, res: Response) => {
   const { fileName, fileType, tokenMint, wallet, amount } = req.body
   const dir = `uploads/${fileName}.${fileType}`
-  console.log(dir, wallet)
-  const list = await readListFromFile(dir)
-  console.log(list)
-  // list.map((item:any, index:number) => {
-  //   tokenTransfer(wallet, item, tokenMint, amount.amountPerEach)
-  // })
+  startTransferToken(dir, wallet, tokenMint, amount)
   res.status(200).json({success:true})
 })
 
