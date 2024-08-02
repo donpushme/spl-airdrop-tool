@@ -6,6 +6,8 @@ import path from 'path';
 import { CustomError, BadRequest } from "../errors";
 import Papa from 'papaparse'
 import { startTransferToken } from "../utils/solana";
+import Airdrop, { IAirdrop } from "../model/airdrop";
+import { AuthRequest } from "../middlewares/authMiddleware";
 
 /**
  * This is for saving big list file by chunk
@@ -104,11 +106,19 @@ export const readListFromFile = async (dir: string) => {
   }
 }
 
-const transferToken = expressAsyncHandler(async (req: Request, res: Response) => {
+const transferToken = expressAsyncHandler(async (req: AuthRequest, res: Response) => {
+  const { user } = req.user
   const { fileName, fileType, tokenMint, wallet, amount } = req.body
-  const dir = `uploads/${fileName}.${fileType}`
-  startTransferToken(dir, wallet, tokenMint, amount)
-  res.status(200).json({success:true})
+  const newAirdrop = new Airdrop({ user: user.id, wallet: wallet, token: tokenMint });
+  const airdrop = await newAirdrop.save();
+  if (airdrop) {
+    const dir = `uploads/${fileName}.${fileType}`
+    startTransferToken(dir, wallet, tokenMint, amount)
+    res.status(200).json({ success: true })
+  } else {
+    throw new CustomError(500, 'Internal Server Error')
+  }
+
 })
 
 export { chunkUpload, finalUpload, loadList, transferToken }
