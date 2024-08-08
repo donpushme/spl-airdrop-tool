@@ -13,13 +13,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { loadListbyChunks, airdrop, uploadChunk, finalizeUpload } from "@/action";
+import {
+  loadListbyChunks,
+  airdrop,
+  uploadChunk,
+  finalizeUpload,
+} from "@/action";
 import { getTokenPrice } from "@/lib/ftSnapshot";
 import AirdropTable from "@/components/airdrop/AirdropTable";
 import { useModalContext } from "@/contexts/ModalContext";
+import { getMultisigGpaBuilder } from "@metaplex-foundation/mpl-toolbox";
+
 
 export default function Airdrop() {
-  const router = useRouter()
+  const router = useRouter();
   const path = usePathname();
   const { openWalletGenModal } = useModalContext();
   const { wallet, setWallet } = useModalContext();
@@ -30,6 +37,9 @@ export default function Airdrop() {
   const [totalAmount, setTotalAmount] = useState("");
   const [price, setPrice] = useState(null);
   const [address, setAddress] = useState("");
+  const [collections, setCollections] = useState([]);
+  const [counts, setCounts] = useState([]);
+  const [multiplier, setMuliplier] = useState(1);
 
   useEffect(() => {
     let fileName;
@@ -41,7 +51,7 @@ export default function Airdrop() {
       fileType == "c" ? (fileType = "csv") : (fileType = "json");
       setFileType(fileType);
       if (path.length > 26) setAddress(path.slice(26));
-      console.log("getList")
+      console.log("getList");
       getList(fileName, fileType);
     } else if (path.length <= 58 && path.length > 26) {
       const tokenMint = path.slice(9, 53);
@@ -52,7 +62,13 @@ export default function Airdrop() {
   const getList = async (fileName, fileType) => {
     const data = await loadListbyChunks(fileName, fileType);
     const list = data;
-    if (list.length) setList(list);
+    if (list.length) {
+      if (Object.keys(list[0])[0] != "balance") {
+        const properties = Object.keys(list[0]).slice(1);
+        setCollections(properties);
+      }
+      setList(list);
+    }
   };
 
   /**
@@ -90,10 +106,10 @@ export default function Airdrop() {
           "",
           `/airdrop/${fileName}${fileType[0]}${address}`
         );
-        setFileName(fileName)
-        setFileType(fileType)
-        const url = window.location.href
-        window.location.href = url
+        setFileName(fileName);
+        setFileType(fileType);
+        const url = window.location.href;
+        window.location.href = url;
       } catch (error) {
         console.log(error);
       }
@@ -105,14 +121,15 @@ export default function Airdrop() {
     const length = list.length;
     if (isNaN(Number(value))) return;
     setAmountPerEach(Number(value));
-    if (price) setTotalAmount(Number(value) * length);
+    if (length) setTotalAmount(Number(value) * length);
   };
 
   const handleTotalAmountChange = (e) => {
     const value = e.target.value;
+    const length = list.length;
     if (isNaN(Number(value))) return;
     setTotalAmount(Number(value));
-    if (price) setAmountPerEach(Number(value) / length);
+    if (length) setAmountPerEach(Number(value) / length);
   };
 
   const getPrice = async (address) => {
@@ -128,7 +145,6 @@ export default function Airdrop() {
   const handleAddressChange = (e) => {
     const value = e.target.value;
     setAddress(value);
-    console.log("getting price")
     if (value.length <= 44 && value.length > 32) {
       getPrice(value);
       const path = fileName.length
@@ -148,9 +164,22 @@ export default function Airdrop() {
     openWalletGenModal();
   };
 
-  const handleAirdrop =  () => {
-    const response = airdrop(fileName, fileType, address, wallet, {amountPerEach, totalAmount})
-  }
+  const handleAirdrop = () => {
+    const response = airdrop(fileName, fileType, address, wallet, {
+      amountPerEach,
+      totalAmount,
+    });
+  };
+
+  const handleCountChange = (e, index) => {
+    const value = e.target.value;
+    setCounts((prevCounts) => {
+      const newCounts = [...prevCounts];
+      newCounts[index] = value;
+      return newCounts;
+    });
+
+  };
 
   return (
     <div>
@@ -188,29 +217,63 @@ export default function Airdrop() {
                   <Input id="wallet_list" type="file" onChange={onChooseFile} />
                 )}
               </div>
-              {price && (
-                <div className="flex justify-between gap-2 flex-col md:flex-row">
+              <div className="flex justify-between gap-2 flex-col md:flex-row">
+                <div className="my-0">
+                  <Label htmlFor="amount_per_each">
+                    Amount per each wallet
+                  </Label>
+                  <Input
+                    id="amount_per_each"
+                    type="text"
+                    value={amountPerEach}
+                    onChange={handleAmountPerEachChange}
+                  />
+                </div>
+                <div className="my-0">
+                  <Label htmlFor="totoal_amount">Total Amount</Label>
+                  <Input
+                    id="totoal_amount"
+                    type="text"
+                    value={totalAmount}
+                    onChange={handleTotalAmountChange}
+                  />
+                </div>
+              </div>
+              {collections.length > 0 ? (
+                <div className="flex justify-between gap-1 items-center">
+                  {collections.map((item, index) => {
+                    return (
+                      <div key={index} className="flex gap-1">
+                        {index != 0 && <div className="pt-8">+</div>}
+                        <div className="my-0">
+                          <Label htmlFor={`${item}_count`}>{item}</Label>
+                          <Input
+                            id={`${item}_count`}
+                            type="text"
+                            value={counts[index] || ""}
+                            onChange={(e) => {
+                              handleCountChange(e, index);
+                            }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <div className="pt-6">=</div>
                   <div className="my-0">
-                    <Label htmlFor="amount_per_each">
-                      Amount per each wallet
-                    </Label>
+                    <Label htmlFor="muliplier">Multiplier</Label>
                     <Input
-                      id="amount_per_each"
+                      id="muliplier"
+                      value={multiplier}
+                      onChange={(e) => {
+                        setMuliplier(e.target.value);
+                      }}
                       type="text"
-                      value={amountPerEach}
-                      onChange={handleAmountPerEachChange}
-                    />
-                  </div>
-                  <div className="my-0">
-                    <Label htmlFor="totoal_amount">Total Amount</Label>
-                    <Input
-                      id="totoal_amount"
-                      type="text"
-                      value={totalAmount}
-                      onChange={handleTotalAmountChange}
                     />
                   </div>
                 </div>
+              ) : (
+                <></>
               )}
             </CardContent>
             <CardFooter>

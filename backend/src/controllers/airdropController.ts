@@ -107,7 +107,7 @@ export const readListFromFile = async (dir: string) => {
 }
 
 const transferToken = expressAsyncHandler(async (req: AuthRequest, res: Response) => {
-  const { user } = req.user
+  const user = req.user
   const { fileName, fileType, tokenMint, wallet, amount } = req.body
   const newAirdrop = new Airdrop({ user: user.id, wallet: wallet, token: tokenMint });
   const airdrop = await newAirdrop.save();

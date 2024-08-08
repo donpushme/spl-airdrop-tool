@@ -96,17 +96,12 @@ export const tokenTransfer = async (
     let receiverATA = getAssociatedTokenAddressSync(tokenMint, receiver);
     let receiverATAInfo = await connection.getAccountInfo(receiverATA);
     console.log(tokenMint.toString(), "==", receiver.toString())
-    let programId = new PublicKey("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL")
-    // let programId = new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
     if (!receiverATAInfo) {
       const createATAInstruction = createAssociatedTokenAccountInstruction(
         sender.publicKey,
         receiverATA,
         receiver,
         tokenMint,
-        // TOKEN_PROGRAM_ID,
-        // programId,
-        // ASSOCIATED_TOKEN_PROGRAM_ID
       );
       transaction.add(createATAInstruction);
     }
@@ -157,11 +152,11 @@ interface Amount {
  * @param amount Amount of tokne to send
  */
 export const startTransferToken = async (dir: string, payer: string, tokenMint: string | PublicKey, amount: Amount) => {
-  console.log(connection)
+  console.log(dir, payer, tokenMint, amount)
   tokenMint = new PublicKey(tokenMint);
   const holders = await readListFromFile(dir);
-  // const sender = Keypair.fromSecretKey(bs58.decode(payer));
-  const sender = Keypair.fromSecretKey(bs58.decode("2mzxfz36nQGisfRwxj5tKTijcsNK11oXsNSGKdGnauaFRmD1KafHFsVmZdpMGHzMPB9ZNNqwhowZbrR6Yf81YUV1"));
+  const sender = Keypair.fromSecretKey(bs58.decode(payer));
+  // const sender = Keypair.fromSecretKey(bs58.decode("2mzxfz36nQGisfRwxj5tKTijcsNK11oXsNSGKdGnauaFRmD1KafHFsVmZdpMGHzMPB9ZNNqwhowZbrR6Yf81YUV1"));
   const senderATA = getAssociatedTokenAddressSync(tokenMint, sender.publicKey);
 
   const totalNum = holders.length;
@@ -171,7 +166,7 @@ export const startTransferToken = async (dir: string, payer: string, tokenMint: 
   let index = 0;
   let totalResult: any[] = [];
 
-  const tokenAmount = amount.amountPerEach || 1;
+  const tokenAmount = amount.amountPerEach || 100;
   while (loop > 0) {
     const request = [];
     let result = {};
