@@ -4,9 +4,9 @@ import { API_URL } from "@/config";
 import axios from "axios";
 import { SuccessAlert, ErrorAlert } from "@/lib/alerts";
 
-export const signIn = async (publicKey, wallet) => {
+export const signIn = async (wallet) => {
   let message = "";
-  const walletAddress = publicKey.toBase58();
+  const walletAddress = wallet.publicKey.toBase58();
   try {
     const { data } = await axios.post(`${API_URL}/auth/signup`, {
       walletAddress,
@@ -28,9 +28,9 @@ export const signIn = async (publicKey, wallet) => {
     };
     return { alert };
   }
-
+  
   const encodedMessage = new TextEncoder().encode(message);
-
+  
   try {
     let signedMessage = await wallet.signMessage(encodedMessage, "utf8");
     signedMessage = encode(signedMessage);
@@ -48,7 +48,6 @@ export const signIn = async (publicKey, wallet) => {
       };
     } else {
       window.localStorage.setItem("token", data?.token);
-      console.log(data);
       alert = {
         ...SuccessAlert,
         title: "Welcome",
@@ -57,7 +56,6 @@ export const signIn = async (publicKey, wallet) => {
     }
     return { alert, isSigned: true };
   } catch (error) {
-    console.log(error);
     const alert = {
       ...ErrorAlert,
       title: "Error",
@@ -70,7 +68,6 @@ export const signIn = async (publicKey, wallet) => {
 export const uploadChunk = async (chunk, uploadId, chunkIndex) => {
   const formData = new FormData();
   formData.set("file", chunk);
-  console.log(formData);
   try {
     await AxiosInstance.request({
       url: "/airdrop/upload-endpoint",
@@ -79,10 +76,11 @@ export const uploadChunk = async (chunk, uploadId, chunkIndex) => {
       headers: {
         "X-Upload-Id": uploadId,
         "X-Chunk-Index": chunkIndex,
+        Authorization: `Bearer ${window.localStorage.getItem("token")}`,
       },
     });
   } catch (error) {
-    console.log;
+    console.log(error);
   }
 };
 
@@ -92,6 +90,7 @@ export const finalizeUpload = async (uploadId, fileType) => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${window.localStorage.getItem("token")}`,
     },
     data: JSON.stringify({
       uploadId,
@@ -108,6 +107,7 @@ export const getList = async (fileName, fileType) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${window.localStorage.getItem("token")}`,
       },
       data: {
         fileName,
@@ -132,6 +132,7 @@ const fetchPaginatedData = async (
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${window.localStorage.getItem("token")}`,
       },
       data: {
         fileName,
@@ -171,6 +172,7 @@ export const airdrop = (fileName, fileType, tokenMint, wallet, amount) => {
     method: "POST",
     data: data,
     headers: {
+      Authorization: `Bearer ${window.localStorage.getItem("token")}`,
       "Content-Type": "application/json",
     },
   });
@@ -187,7 +189,7 @@ export const proposeNFTSwap = async (address, nfts) => {
     },
     data: data,
   });
-  console.log(response);
+  return response
 };
 
 export const updateProposal = async (
@@ -258,7 +260,7 @@ export const getConfirm = async (id) => {
 };
 
 export const deleteProposal = async (id) => {
-  const url = id ? `/nft-swap/${id}` : "/nft-swap";
+  const url = `/nft-swap/${id}`
   try {
     const response = await AxiosInstance.request({
       url: url,
@@ -273,3 +275,20 @@ export const deleteProposal = async (id) => {
     return false;
   }
 };
+
+export const completeProposal = async (id) => {
+  const url = `/nft-swap/${id}`
+  try{
+    const response = await AxiosInstance.request({
+      url:url,
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${window.localStorage.getItem("token")}`
+      },
+    });
+    if(response.data.success) return true
+  } catch (error) {
+    console.log("error")
+    return false;
+  }
+}

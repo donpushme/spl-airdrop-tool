@@ -36,9 +36,9 @@ export default function ReceiveTable({ list }) {
             <TableCell>{status[item.status]}</TableCell>
             <TableCell>{item.date}</TableCell>
             <TableCell>
-              <Link href={`/nft-swap/${item._id}`}>
+              {item.status != 2 && <Link href={`/nft-swap/${item._id}`}>
                 <SquareArrowOutUpRightIcon className="text-right" size={20} />
-              </Link>
+              </Link>}
             </TableCell>
           </TableRow>
         ))}

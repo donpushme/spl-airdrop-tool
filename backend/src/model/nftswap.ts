@@ -3,6 +3,7 @@ import mongoose, { Document, Schema, Model, model } from 'mongoose';
 export enum Status{
   Pending,
   Accepted,
+  Completed
 }
 
 // Define the interface for the NFTSwap document

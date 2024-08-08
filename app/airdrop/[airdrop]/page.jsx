@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { loadListbyChunks, airdrop, uploadChunk, finalizeUpload } from "@/action";
 import { getTokenPrice } from "@/lib/ftSnapshot";
@@ -19,6 +19,7 @@ import AirdropTable from "@/components/airdrop/AirdropTable";
 import { useModalContext } from "@/contexts/ModalContext";
 
 export default function Airdrop() {
+  const router = useRouter()
   const path = usePathname();
   const { openWalletGenModal } = useModalContext();
   const { wallet, setWallet } = useModalContext();
@@ -40,6 +41,7 @@ export default function Airdrop() {
       fileType == "c" ? (fileType = "csv") : (fileType = "json");
       setFileType(fileType);
       if (path.length > 26) setAddress(path.slice(26));
+      console.log("getList")
       getList(fileName, fileType);
     } else if (path.length <= 58 && path.length > 26) {
       const tokenMint = path.slice(9, 53);
@@ -90,7 +92,8 @@ export default function Airdrop() {
         );
         setFileName(fileName)
         setFileType(fileType)
-        getList(fileName, fileType);
+        const url = window.location.href
+        window.location.href = url
       } catch (error) {
         console.log(error);
       }
@@ -125,7 +128,8 @@ export default function Airdrop() {
   const handleAddressChange = (e) => {
     const value = e.target.value;
     setAddress(value);
-    if (value.length < 44 && value.length > 32) {
+    console.log("getting price")
+    if (value.length <= 44 && value.length > 32) {
       getPrice(value);
       const path = fileName.length
         ? `/airdrop/${fileName}${fileType[0]}${value}`

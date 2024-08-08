@@ -11,10 +11,8 @@ import {
   HistoryIcon,
 } from "lucide-react";
 import { Button } from "./ui/button";
-import { ProfileDropDown } from "./ProfileDropDown";
 import { useWalletMultiButton } from "@solana/wallet-adapter-base-ui";
-import { useWalletModal } from "@solana/wallet-adapter-react-ui";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import WalletModal from "@/components/WalletModal";
 import { AlertCom } from "@/components/AlertCom";
 import RightBar from "@/components/RightBar";
@@ -23,7 +21,7 @@ import { useAlertContext } from "@/contexts/AlertContext";
 import { SuccessAlert, ErrorAlert } from "@/lib/alerts";
 import { useTheme } from "next-themes";
 import { NavMenu } from "./NavMenu";
-import { signIn, testSign } from "@/action";
+import { signIn } from "@/action";
 import Logo from "./Logo";
 import WalletGenModal from "./airdrop/WalletGenModal";
 
@@ -40,6 +38,7 @@ export default function NavBar({ className }) {
     buttonState,
     onConnect,
     onDisconnect,
+    onSelectWallet,
     publicKey,
     walletIcon,
     walletName,
@@ -56,7 +55,8 @@ export default function NavBar({ className }) {
   useEffect(() => {
     if (buttonState === "connected") {
       closeModal();
-    } else if (buttonState === "no-wallet") {
+    } else if(buttonState === "no-wallet") {
+      console.log(buttonState);
       setAlert({
         ...ErrorAlert,
         title: "Wallet Disconnected",
@@ -77,14 +77,13 @@ export default function NavBar({ className }) {
       //   }
       //   break;
       default:
-        signOut();
+        if (isSigned) signOut();
         onDisconnect();
     }
   };
 
   //SignUp and signIn at once.
   const sign = useCallback(async () => {
-    console.log(isSigned);
     if (buttonState !== "connected") {
       setAlert({
         ...ErrorAlert,
@@ -94,10 +93,11 @@ export default function NavBar({ className }) {
       openModal();
       return;
     }
-    const response = await signIn(publicKey, wallet);
+    const response = await signIn(wallet);
     setAlert(response.alert);
-    if (response.alert.visible) setIsSigned(true);
-  }, [wallet, publicKey, setAlert, buttonState, isSigned, setIsSigned]);
+    console.log(response)
+    if (response.isSigned) setIsSigned(true);
+  }, [wallet, setAlert, buttonState, setIsSigned]);
 
   //SignOut by removing the token from LocalStorage
   const signOut = useCallback(async () => {
@@ -151,7 +151,7 @@ export default function NavBar({ className }) {
           }}
         /> */}
           {/* <ProfileDropDown sign={sign} signOut={signOut} isSigned={isSigned} /> */}
-          <RightBar signIn={sign} signOut={signOut} isSigned={isSigned}/>
+          <RightBar signIn={sign} signOut={signOut} isSigned={isSigned} />
         </div>
       </nav>
       <WalletModal isOpen={isModalOpen} onClose={closeModal} />

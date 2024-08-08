@@ -9,19 +9,19 @@ import { useState, useMemo } from "react";
 
 export default function WalletGenModal() {
   const [checked, setChecked] = useState(false);
-  const [copyed, setCopyed] = useState(false)
+  const [copied, setCopied] = useState(false)
   const { showWalletGenModal, closeWalletGenModal, setWallet } = useModalContext();
   const keyPair = Keypair.generate();
   const secretKey = useMemo( () => bs58.encode(keyPair.secretKey),[]);
   const closeModal = () =>{
     setChecked(false)
-    setCopyed(false)
+    setCopied(false)
     closeWalletGenModal();
   }
   const copyContent = async () => {
     try {
       await navigator.clipboard.writeText(secretKey);
-      setCopyed(true)
+      setCopied(true)
     } catch(error) {
       console.log(error)
     }
@@ -40,7 +40,7 @@ export default function WalletGenModal() {
           <div className="w-[400px] border rounded text-center text-wrap break-all p-2 hover:cursor-pointer" onClick={copyContent}>
             {secretKey}
           </div>
-          <div className="text-sm my-4">{copyed ? "Copyed !" : "Click the secret key to copy"}</div>
+          <div className="text-sm my-4">{copied ? "Copied !" : "Click the secret key to copy"}</div>
           <div className="w-[400px] h-[380px] text-sm border rounded p-2">
             Note goes here
           </div>

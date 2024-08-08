@@ -33,8 +33,8 @@ export default function RightBar(props) {
       <SheetContent>
         <SheetHeader>
           <SheetTitle>Edit profile</SheetTitle>
-          <div className="flex gap-4">
-            {isSigned ? (<><LogOutIcon onClick={signOut}/>Signout</>) : (<><LogInIcon onClick={signIn}/>Siginin</>)}
+          <div className="flex gap-4 hover:">
+            {isSigned ? (<><LogOutIcon className="hover:cursor-pointer" onClick={signOut}/>Signout</>) : (<><LogInIcon className="hover:cursor-pointer" onClick={signIn}/>SignIn</>)}
           </div>
           <SheetDescription>
             Make changes to your profile here. Click save when you are done.

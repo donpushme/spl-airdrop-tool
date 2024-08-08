@@ -9,7 +9,7 @@ import {
   updateProposal,
   updateConfirm,
   getConfirm,
-  deleteProposal,
+  completeProposal,
 } from "@/action";
 import dynamic from "next/dynamic";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -19,7 +19,7 @@ import { io } from "socket.io-client";
 import { API_URL } from "@/config";
 import { useRouter } from "next/navigation";
 
-const NftTicket = dynamic(() => import("@/components/nftswap/NFTticket"), {
+const NFTCard = dynamic(() => import("@/components/nftswap/NFTCard"), {
   ssr: false,
   loading: () => (
     <div className="w-[50px] h-[50px] rounded-lg animate-pulse bg-white/5" />
@@ -133,8 +133,9 @@ export default function NFTSwap() {
 
   const selectNFTToSwap = (e) => {
     const id = e.target.id;
-    const image = e.target["data-loaded-src"];
-    setNftToSwap((pre) => [...pre, { id, image }]);
+    const add = nfts.find((item) => item.id == id);
+    console.log(add);
+    setNftToSwap((pre) => [...pre, add]);
     const assets = nfts.reduce((acc, cur) => {
       if (cur.id != id) acc.push(cur);
       return acc;
@@ -145,8 +146,10 @@ export default function NFTSwap() {
 
   const selectNFTToCancel = (e) => {
     const id = e.target.id;
-    const image = e.target["data-loaded-src"];
-    setNfts((pre) => [...pre, { id, image }]);
+    const add = nftToSwap.find((item) => item.id == id);
+    console.log(add);
+
+    setNfts((pre) => [...pre, add]);
     const assets = nftToSwap.reduce((acc, cur) => {
       if (cur.id != id) acc.push(cur);
       return acc;
@@ -172,7 +175,7 @@ export default function NFTSwap() {
 
   const swap = async () => {
     await swapNFT(wallet, nftToSwap, targetAddress);
-    if(isSender) await deleteProposal(proposalId)
+    if (isSender) await completeProposal(proposalId);
     router.push("/nft-swap");
   };
 
@@ -197,16 +200,7 @@ export default function NFTSwap() {
         <Label className="block mb-2">Your NFTs</Label>
         <div className="flex flex-wrap min-h-[84px] w-full border hover:border-green rounded-lg gap-2 p-4">
           {nfts.map((nft, index) => {
-            const imageURI = nft.image;
-            const id = nft.id;
-            return (
-              <NftTicket
-                src={imageURI}
-                key={index}
-                id={id}
-                onClick={selectNFTToSwap}
-              />
-            );
+            return <NFTCard nft={nft} key={index} onClick={selectNFTToSwap} />;
           })}
         </div>
       </div>
@@ -215,15 +209,8 @@ export default function NFTSwap() {
         <Label className="block mb-2">NFTs to swap</Label>
         <div className="flex flex-wrap min-h-[84px] w-full border hover:border-green gap-2 rounded-lg p-4">
           {nftToSwap.map((nft, index) => {
-            const imageURI = nft.image;
-            const id = nft.id;
             return (
-              <NftTicket
-                src={imageURI}
-                key={index}
-                id={id}
-                onClick={selectNFTToCancel}
-              />
+              <NFTCard key={index} nft={nft} onClick={selectNFTToCancel} />
             );
           })}
         </div>
@@ -234,9 +221,7 @@ export default function NFTSwap() {
       <div className="mb-8">
         <div className="flex flex-wrap min-h-[82px] w-full border hover:border-green gap-2 rounded-lg p-4">
           {proposedNFT.map((nft, index) => {
-            const imageURI = nft.image;
-            const id = nft.id;
-            return <NftTicket src={imageURI} key={index} id={id} />;
+            return <NFTCard nft={nft} key={index} />;
           })}
         </div>
       </div>

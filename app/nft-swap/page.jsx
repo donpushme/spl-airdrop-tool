@@ -13,7 +13,7 @@ import bs58 from "bs58";
 import SendTable from "@/components/nftswap/SendTable";
 import ReceiveTable from "@/components/nftswap/ReceiveTable";
 
-const NftTicket = dynamic(() => import("@/components/nftswap/NFTticket"), {
+const NftTicket = dynamic(() => import("@/components/nftswap/NFTCard"), {
   ssr: false,
   loading: () => (
     <div className="w-[50px] h-[50px] rounded-lg animate-pulse bg-white/5" />

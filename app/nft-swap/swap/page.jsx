@@ -11,7 +11,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletMultiButton } from "@solana/wallet-adapter-base-ui";
 import bs58 from "bs58";
 
-const NftTicket = dynamic(() => import("@/components/nftswap/NFTticket"), {
+const NFTCard = dynamic(() => import("@/components/nftswap/NFTCard"), {
   ssr: false,
   loading: () => (
     <div className="w-[50px] h-[50px] rounded-lg animate-pulse bg-white/5" />
@@ -100,14 +100,7 @@ export default function NFTSwap() {
           {nfts.map((nft, index) => {
             const imageURI = nft.image;
             const id = nft.id;
-            return (
-              <NftTicket
-                src={imageURI}
-                key={index}
-                id={id}
-                onClick={selectNFTToSwap}
-              />
-            );
+            return <NFTCard key={index} nft={nft} onClick={selectNFTToSwap} />;
           })}
         </div>
       </div>
@@ -125,13 +118,10 @@ export default function NFTSwap() {
         <Label className="block mb-2">NFTs to swap</Label>
         <div className="flex flex-wrap w-full border hover:border-green gap-2 rounded-lg p-4">
           {nftToSwap.map((nft, index) => {
-            const imageURI = nft.image;
-            const id = nft.id;
             return (
-              <NftTicket
-                src={imageURI}
+              <NFTCard
+                nft={nft}
                 key={index}
-                id={id}
                 onClick={selectNFTToCancel}
               />
             );

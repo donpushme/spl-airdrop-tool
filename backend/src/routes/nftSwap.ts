@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getProposal, setProposal, updateProposal, updateConfirm, getConfirm, deleteProposal } from '../controllers/nftSwapController'
+import { getProposal, setProposal, updateProposal, updateConfirm, getConfirm, deleteProposal, completeProposal } from '../controllers/nftSwapController'
 
 const nftSwapRouter = Router()
 
@@ -10,5 +10,7 @@ nftSwapRouter.post("/update", updateProposal);
 nftSwapRouter.post("/update-confirm", updateConfirm);
 nftSwapRouter.post("/confirm", getConfirm);
 nftSwapRouter.delete("/:id", deleteProposal);
+nftSwapRouter.patch("/:id", completeProposal);
+
 
 export default nftSwapRouter

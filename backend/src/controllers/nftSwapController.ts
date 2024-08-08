@@ -42,23 +42,29 @@ const updateProposal = expressAsyncHandler(async (req: AuthRequest, res: Respons
 const updateConfirm = expressAsyncHandler(async (req: AuthRequest, res: Response) => {
   const { id, confirm } = req.body
   let status;
-  if(!confirm[0] && !confirm[1]) status = Status.Pending
-  await NFTSwap.findOneAndUpdate({ _id: id }, { confirm1: confirm[0], confirm2: confirm[1], status:status});
+  if (!confirm[0] && !confirm[1]) status = Status.Pending
+  await NFTSwap.findOneAndUpdate({ _id: id }, { confirm1: confirm[0], confirm2: confirm[1], status: status });
   res.status(200).json({ success: true })
 })
 
 const getConfirm = expressAsyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.body
   const swap = await NFTSwap.findById(id);
-  if(swap)  res.status(200).json({ success: true, confirm:[swap.confirm1, swap.confirm2] })
+  if (swap) res.status(200).json({ success: true, confirm: [swap.confirm1, swap.confirm2] })
 })
 
 const deleteProposal = expressAsyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params
-  await NFTSwap.deleteOne({_id:id});
+  await NFTSwap.deleteOne({ _id: id });
+  res.status(200).json({ success: true })
+})
+
+const completeProposal = expressAsyncHandler(async (req: AuthRequest, res: Response) => {
+  const { id } = req.params
+  await NFTSwap.findByIdAndUpdate(id, { status: Status.Completed });
   res.status(200).json({ success: true })
 })
 
 
 
-export { getProposal, setProposal, updateProposal, updateConfirm, getConfirm, deleteProposal }
+export { getProposal, setProposal, updateProposal, updateConfirm, getConfirm, deleteProposal, completeProposal }
