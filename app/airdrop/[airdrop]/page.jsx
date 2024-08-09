@@ -23,49 +23,85 @@ import { getTokenPrice } from "@/lib/ftSnapshot";
 import AirdropTable from "@/components/airdrop/AirdropTable";
 import { useModalContext } from "@/contexts/ModalContext";
 import { getMultisigGpaBuilder } from "@metaplex-foundation/mpl-toolbox";
-
+import {
+  simpleAirdrop,
+  multiplierAirdrop,
+  makeURLwithMultiplier,
+  makeURLwithFile,
+  makeURLwithAddress,
+  makeURLwithAmount,
+  removeCountsfromUrl,
+  getParams,
+} from "@/lib/utils";
+import { startTransferToken } from "@/lib/airdrop";
 
 export default function Airdrop() {
-  const router = useRouter();
   const path = usePathname();
-  const { openWalletGenModal } = useModalContext();
-  const { wallet, setWallet } = useModalContext();
+  const { wallet, openWalletGenModal } = useModalContext();
   const [list, setList] = useState([]);
   const [fileName, setFileName] = useState("");
   const [fileType, setFileType] = useState("");
   const [amountPerEach, setAmountPerEach] = useState("");
   const [totalAmount, setTotalAmount] = useState("");
-  const [price, setPrice] = useState(null);
   const [address, setAddress] = useState("");
   const [collections, setCollections] = useState([]);
   const [counts, setCounts] = useState([]);
   const [multiplier, setMuliplier] = useState(1);
+  const [countAirdrop, setCountAirdrop] = useState(false);
 
   useEffect(() => {
-    let fileName;
-    let fileType;
-    if (path.length == 26 || path.length >= 58) {
-      fileName = path.slice(9, 25);
+    const {
+      flag,
+      fileName,
+      fileType,
+      address,
+      counts,
+      multiplier,
+      totalAmount,
+    } = getParams(path);
+    if (flag == 0) {
       setFileName(fileName);
-      fileType = path.slice(25, 26);
-      fileType == "c" ? (fileType = "csv") : (fileType = "json");
       setFileType(fileType);
-      if (path.length > 26) setAddress(path.slice(26));
-      console.log("getList");
+      setAddress(address);
+      setCounts(counts);
+      setMuliplier(multiplier);
+      setTotalAmount(totalAmount);
       getList(fileName, fileType);
-    } else if (path.length <= 58 && path.length > 26) {
-      const tokenMint = path.slice(9, 53);
-      setAddress(tokenMint);
     }
   }, []);
+
+  useEffect(() => {
+    if (countAirdrop) {
+      const { amountPerCount, resultList } = multiplierAirdrop(
+        list,
+        totalAmount,
+        collections,
+        counts,
+        multiplier
+      );
+      setList(resultList);
+      setAmountPerEach(amountPerCount);
+      const url = makeURLwithMultiplier(path, counts, multiplier, totalAmount);
+      window.history.replaceState({}, "", url);
+    } else {
+      const resultList = simpleAirdrop(list, totalAmount);
+      setList(resultList);
+      const url = makeURLwithAmount(path, totalAmount);
+      window.history.replaceState({}, "", url);
+    }
+  }, [counts, multiplier, countAirdrop, totalAmount]);
 
   const getList = async (fileName, fileType) => {
     const data = await loadListbyChunks(fileName, fileType);
     const list = data;
+    console.log(list);
     if (list.length) {
-      if (Object.keys(list[0])[0] != "balance") {
+      if (!Object.keys(list[0]).includes("balance")) {
         const properties = Object.keys(list[0]).slice(1);
         setCollections(properties);
+        setCountAirdrop(true);
+      } else {
+        window.history.replaceState({}, "", removeCountsfromUrl(path));
       }
       setList(list);
     }
@@ -104,7 +140,7 @@ export default function Airdrop() {
         window.history.replaceState(
           {},
           "",
-          `/airdrop/${fileName}${fileType[0]}${address}`
+          makeURLwithFile(path, fileName, fileType)
         );
         setFileName(fileName);
         setFileType(fileType);
@@ -120,43 +156,23 @@ export default function Airdrop() {
     const value = e.target.value;
     const length = list.length;
     if (isNaN(Number(value))) return;
-    setAmountPerEach(Number(value));
-    if (length) setTotalAmount(Number(value) * length);
+    setAmountPerEach(Number(value) || "");
+    if (length) setTotalAmount(Number(value) * length || "");
   };
 
   const handleTotalAmountChange = (e) => {
     const value = e.target.value;
     const length = list.length;
     if (isNaN(Number(value))) return;
-    setTotalAmount(Number(value));
-    if (length) setAmountPerEach(Number(value) / length);
-  };
-
-  const getPrice = async (address) => {
-    try {
-      const res = await getTokenPrice(address);
-      console.log(res);
-      if (res) setPrice(res);
-    } catch (error) {
-      console.log(error);
-    }
+    setTotalAmount(Number(value) || "");
+    if (length) setAmountPerEach(Number(value) / length || "");
   };
 
   const handleAddressChange = (e) => {
     const value = e.target.value;
     setAddress(value);
     if (value.length <= 44 && value.length > 32) {
-      getPrice(value);
-      const path = fileName.length
-        ? `/airdrop/${fileName}${fileType[0]}${value}`
-        : `/airdrop/${value}`;
-      window.history.replaceState({}, "", path);
-    } else {
-      setPrice(null);
-      const path = fileName.length
-        ? `/airdrop/${fileName}${fileType[0]}`
-        : `/airdrop/inputfile`;
-      window.history.replaceState({}, "", path);
+      window.history.replaceState({}, "", makeURLwithAddress(path, value));
     }
   };
 
@@ -165,10 +181,7 @@ export default function Airdrop() {
   };
 
   const handleAirdrop = () => {
-    const response = airdrop(fileName, fileType, address, wallet, {
-      amountPerEach,
-      totalAmount,
-    });
+    startTransferToken(list, wallet, address, setList);
   };
 
   const handleCountChange = (e, index) => {
@@ -178,7 +191,6 @@ export default function Airdrop() {
       newCounts[index] = value;
       return newCounts;
     });
-
   };
 
   return (
@@ -192,7 +204,7 @@ export default function Airdrop() {
                 You can airdrop your token to the list of wallet account.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-2">
+            <CardContent className="space-y-6">
               <div className="space-y-1">
                 <Label htmlFor="name">Token Address</Label>
                 <Input
@@ -217,10 +229,61 @@ export default function Airdrop() {
                   <Input id="wallet_list" type="file" onChange={onChooseFile} />
                 )}
               </div>
+              {collections.length > 0 ? (
+                <>
+                  <hr />
+                  <div className="space-y-1">
+                    <Label>Set Multiplier</Label>
+                    <div className="flex gap-1 justify-start">
+                      {collections.map((item, index) => {
+                        return (
+                          <div key={index} className="flex gap-1">
+                            {index != 0 && <div className="pt-8">+</div>}
+                            <div className="my-0">
+                              <Label
+                                htmlFor={`${item}_count`}
+                                className="text-xs font-light"
+                              >
+                                {item}
+                              </Label>
+                              <Input
+                                className="max-w-[100px]"
+                                id={`${item}_count`}
+                                type="text"
+                                value={counts[index] || ""}
+                                onChange={(e) => {
+                                  handleCountChange(e, index);
+                                }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="my-0">
+                      <Label htmlFor="muliplier" className="text-xs font-light">
+                        Multiplier
+                      </Label>
+                      <Input
+                        id="muliplier"
+                        value={multiplier}
+                        onChange={(e) => {
+                          setMuliplier(e.target.value);
+                        }}
+                        type="text"
+                        className="max-w-[100px]"
+                      />
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <></>
+              )}
+              <hr />
               <div className="flex justify-between gap-2 flex-col md:flex-row">
-                <div className="my-0">
+                <div className="space-y-1">
                   <Label htmlFor="amount_per_each">
-                    Amount per each wallet
+                    Amount per {countAirdrop ? "count" : "wallet"}
                   </Label>
                   <Input
                     id="amount_per_each"
@@ -229,7 +292,7 @@ export default function Airdrop() {
                     onChange={handleAmountPerEachChange}
                   />
                 </div>
-                <div className="my-0">
+                <div className="space-y-1">
                   <Label htmlFor="totoal_amount">Total Amount</Label>
                   <Input
                     id="totoal_amount"
@@ -239,42 +302,6 @@ export default function Airdrop() {
                   />
                 </div>
               </div>
-              {collections.length > 0 ? (
-                <div className="flex justify-between gap-1 items-center">
-                  {collections.map((item, index) => {
-                    return (
-                      <div key={index} className="flex gap-1">
-                        {index != 0 && <div className="pt-8">+</div>}
-                        <div className="my-0">
-                          <Label htmlFor={`${item}_count`}>{item}</Label>
-                          <Input
-                            id={`${item}_count`}
-                            type="text"
-                            value={counts[index] || ""}
-                            onChange={(e) => {
-                              handleCountChange(e, index);
-                            }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                  <div className="pt-6">=</div>
-                  <div className="my-0">
-                    <Label htmlFor="muliplier">Multiplier</Label>
-                    <Input
-                      id="muliplier"
-                      value={multiplier}
-                      onChange={(e) => {
-                        setMuliplier(e.target.value);
-                      }}
-                      type="text"
-                    />
-                  </div>
-                </div>
-              ) : (
-                <></>
-              )}
             </CardContent>
             <CardFooter>
               {wallet.length == 0 ? (

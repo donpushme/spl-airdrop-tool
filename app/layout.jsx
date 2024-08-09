@@ -1,6 +1,6 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Providers from "@/components/Prividers";
+import Providers from "@/components/Providers";
 import dynamic from "next/dynamic";
 import LeftBar from "@/components/LeftBar";
 const NavBar = dynamic(() => import("@/components/NavBar"), {
