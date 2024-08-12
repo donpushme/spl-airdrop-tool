@@ -46,6 +46,7 @@ export default function Airdrop() {
   const [address, setAddress] = useState("");
   const [collections, setCollections] = useState([]);
   const [counts, setCounts] = useState([]);
+  const [totalCounts, setTotalCounts] = useState(0)
   const [multiplier, setMuliplier] = useState(1);
   const [countAirdrop, setCountAirdrop] = useState(false);
 
@@ -77,7 +78,8 @@ export default function Airdrop() {
         totalAmount,
         collections,
         counts,
-        multiplier
+        multiplier,
+        setTotalCounts
       );
       setList(resultList);
       setAmountPerEach(amountPerCount);
@@ -92,6 +94,7 @@ export default function Airdrop() {
   }, [counts, multiplier, countAirdrop, totalAmount]);
 
   const getList = async (fileName, fileType) => {
+    if(fileName == "" || fileType == "") return
     const data = await loadListbyChunks(fileName, fileType);
     const list = data;
     console.log(list);
@@ -106,6 +109,12 @@ export default function Airdrop() {
       setList(list);
     }
   };
+
+  const clear = () => {
+    setList([]);
+    setAmountPerEach("0");
+    window.history.replaceState({}, "", removeCountsfromUrl(path));
+  }
 
   /**
    * Upload the file as soon as the user input the file(.json/.csv)
@@ -154,18 +163,16 @@ export default function Airdrop() {
 
   const handleAmountPerEachChange = (e) => {
     const value = e.target.value;
-    const length = list.length;
     if (isNaN(Number(value))) return;
-    setAmountPerEach(Number(value) || "");
-    if (length) setTotalAmount(Number(value) * length || "");
+    setAmountPerEach(value || "");
+    if (totalCounts) setTotalAmount(Number(value) * totalCounts || "");
   };
 
   const handleTotalAmountChange = (e) => {
     const value = e.target.value;
-    const length = list.length;
     if (isNaN(Number(value))) return;
-    setTotalAmount(Number(value) || "");
-    if (length) setAmountPerEach(Number(value) / length || "");
+    setTotalAmount(value || "");
+    if (totalCounts) setAmountPerEach(Number(value) / totalCounts || "");
   };
 
   const handleAddressChange = (e) => {
@@ -219,9 +226,7 @@ export default function Airdrop() {
                 {list.length > 0 ? (
                   <Button
                     className="block"
-                    onClick={() => {
-                      setList([]);
-                    }}
+                    onClick={clear}
                   >
                     New
                   </Button>

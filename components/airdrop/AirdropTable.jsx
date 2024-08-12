@@ -17,7 +17,7 @@ const initialArray = new Array(100).fill(1);
 export default function AirdropTable(props) {
   const [pages, setPages] = useState(1);
   const [page, setPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(1000);
+  const [rowsPerPage, setRowsPerPage] = useState(20); //You can change it for rows per page
   const [rowArray, setRowArray] = useState(initialArray);
   const { list } = props;
   const [copied, setCopied] = useState(false);
@@ -34,18 +34,6 @@ export default function AirdropTable(props) {
     const array = new Array(rowsPerPage).fill(1);
     setRowArray(array);
   }, [rowsPerPage, setRowArray]);
-
-  const copyContent = async (value) => {
-    try {
-      await navigator.clipboard.writeText(value);
-      setCopied(true);
-    } catch (error) {
-      console.log(error);
-    }
-    setTimeout(() => {
-      setCopied(false);
-    }, 1000);
-  };
 
   if (list?.length) {
     const properties = Object.keys(list[0]);
