@@ -15,14 +15,11 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   loadListbyChunks,
-  airdrop,
   uploadChunk,
   finalizeUpload,
 } from "@/action";
-import { getTokenPrice } from "@/lib/ftSnapshot";
 import AirdropTable from "@/components/airdrop/AirdropTable";
 import { useModalContext } from "@/contexts/ModalContext";
-import { getMultisigGpaBuilder } from "@metaplex-foundation/mpl-toolbox";
 import {
   simpleAirdrop,
   multiplierAirdrop,
@@ -82,7 +79,7 @@ export default function Airdrop() {
         setTotalCounts
       );
       setList(resultList);
-      setAmountPerEach(amountPerCount);
+      setAmountPerEach(amountPerCount || "");
       const url = makeURLwithMultiplier(path, counts, multiplier, totalAmount);
       window.history.replaceState({}, "", url);
     } else {
@@ -97,7 +94,6 @@ export default function Airdrop() {
     if(fileName == "" || fileType == "") return
     const data = await loadListbyChunks(fileName, fileType);
     const list = data;
-    console.log(list);
     if (list.length) {
       if (!Object.keys(list[0]).includes("balance")) {
         const properties = Object.keys(list[0]).slice(1);
@@ -112,7 +108,7 @@ export default function Airdrop() {
 
   const clear = () => {
     setList([]);
-    setAmountPerEach("0");
+    setAmountPerEach("");
     window.history.replaceState({}, "", removeCountsfromUrl(path));
   }
 

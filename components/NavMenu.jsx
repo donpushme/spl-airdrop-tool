@@ -119,6 +119,9 @@ export function NavMenu() {
               <ListItem href="/nft-swap" title="NFT Proposal List">
                 List of NFT swap proposals associated to you
               </ListItem>
+              <ListItem href="/nft-swap/history" title="Swap History">
+                List of NFT swap proposals completed
+              </ListItem>
             </ul>
           </NavigationMenuContent>
         </NavigationMenuItem>

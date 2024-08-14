@@ -9,8 +9,7 @@ import { proposeNFTSwap, getProposal } from "@/action";
 import dynamic from "next/dynamic";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/navigation";
-import { useWalletMultiButton } from "@solana/wallet-adapter-base-ui";
-import bs58 from "bs58";
+import { useAppContext } from "@/contexts/AppContext";
 
 const NFTCard = dynamic(() => import("@/components/nftswap/NFTCard"), {
   ssr: false,
@@ -20,12 +19,13 @@ const NFTCard = dynamic(() => import("@/components/nftswap/NFTCard"), {
 });
 
 export default function NFTSwap() {
-  const router = useRouter()
+  const router = useRouter();
   const [nfts, setNfts] = useState([]);
   const wallet = useWallet();
   const [targetAddress, setTargetAddress] = useState("");
   const [nftToSwap, setNftToSwap] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const { isSigned } = useAppContext();
 
   const loadAssets = useCallback(async () => {
     if (wallet.publicKey != null && !nfts.length && !nftToSwap.length) {
@@ -45,8 +45,10 @@ export default function NFTSwap() {
   }, [wallet]);
 
   useEffect(() => {
+    console.log(isSigned)
+    if (!isSigned) return;
     loadAssets();
-  }, [loadAssets]);
+  }, [loadAssets, isSigned]);
 
   const propose = async () => {
     if (
@@ -59,9 +61,9 @@ export default function NFTSwap() {
     if (!nftToSwap || nftToSwap.length == 0) return;
     setIsLoading(true);
     const response = await proposeNFTSwap(targetAddress, nftToSwap);
-    setIsLoading(false)
-    if(response.data.success){
-      router.push("/nft-swap")
+    setIsLoading(false);
+    if (response.data.success) {
+      router.push("/nft-swap");
     }
   };
 
@@ -107,7 +109,14 @@ export default function NFTSwap() {
         <Label className="block mb-2">Your NFTs</Label>
         <div className="flex flex-wrap w-full border rounded-lg gap-2 p-4">
           {nfts.map((nft, index) => {
-            return <NFTCard className="" nft={nft} key={index} onClick={selectNFTToSwap} />;
+            return (
+              <NFTCard
+                className=""
+                nft={nft}
+                key={index}
+                onClick={selectNFTToSwap}
+              />
+            );
           })}
         </div>
       </div>
@@ -133,7 +142,11 @@ export default function NFTSwap() {
         />
       </div>
       <div className="my-8">
-        <Button className="border hover:border-green" onClick={propose} disabled={isLoading}>
+        <Button
+          className="border hover:border-green"
+          onClick={propose}
+          disabled={isLoading}
+        >
           Propose
         </Button>
       </div>

@@ -18,6 +18,7 @@ import { ArrowUpDownIcon } from "lucide-react";
 import { io } from "socket.io-client";
 import { API_URL } from "@/config";
 import { useRouter } from "next/navigation";
+import { useAppContext } from "@/contexts/AppContext";
 
 const NFTCard = dynamic(() => import("@/components/nftswap/NFTCard"), {
   ssr: false,
@@ -38,6 +39,7 @@ export default function NFTSwap() {
   const [isSender, setIsSender] = useState(false);
   const [confirm, setConfirm] = useState([false, false]);
   const socket = useMemo(() => io(API_URL), []);
+  const {isSigned} = useAppContext()
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const loadConfirm = async () => {
@@ -83,6 +85,7 @@ export default function NFTSwap() {
   }, [wallet.publicKey, path]);
 
   useEffect(() => {
+    if(!isSigned) return
     // Set up socket listeners once when component mounts
     socket.on("updateProposal", () => {
       loadAssets(); // Call the function to load assets
@@ -102,7 +105,7 @@ export default function NFTSwap() {
       socket.off("updateProposal");
       socket.off("updateConfirm");
     };
-  }, [socket, loadAssets, loadConfirm]);
+  }, [socket, loadAssets, loadConfirm, isSigned]);
 
   useEffect(() => {
     loadAssets();

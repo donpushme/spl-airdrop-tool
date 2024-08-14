@@ -21,7 +21,7 @@ export default function RootLayout({ children }) {
       <body className={inter.className}>
         <Providers>
           <NavBar className="z-30" />
-          <LeftBar />
+          {/* <LeftBar /> */}
           <div className="flex">
             <div className="flex justify-center items-center w-full pt-28">
               {children}

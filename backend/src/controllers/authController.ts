@@ -40,7 +40,6 @@ const signUp = expressAsyncHandler(async (req: Request, res: Response): Promise<
 
         const isValid = validateEd25519Address(walletAddress);
         if (!isValid) {
-            console.error('[SIGNUP]: Wallet address is invalid');
             return res.status(400).json({ error: 'wallet address is invalid' });
         }
 
@@ -90,8 +89,6 @@ const signIn = expressAsyncHandler(
             throw new CustomError(400, 'Wallet address not found');
         }
 
-        console.log(user.walletAddress, user.nonce, signedMessage)
-
         const valid_signature = verifySignature(
             user.walletAddress,
             user.nonce,
@@ -108,7 +105,7 @@ const signIn = expressAsyncHandler(
             },
             { new: true }
         );
-        const token = user.createJWT();
+        const token = signedMessage + "&_&" + user.walletAddress; //This is the token with the signature and nonce of user
         res.status(200).json({ success: true, token })
     }
 )

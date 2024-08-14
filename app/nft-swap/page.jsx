@@ -12,23 +12,19 @@ import { useWalletMultiButton } from "@solana/wallet-adapter-base-ui";
 import bs58 from "bs58";
 import SendTable from "@/components/nftswap/SendTable";
 import ReceiveTable from "@/components/nftswap/ReceiveTable";
-
-const NftTicket = dynamic(() => import("@/components/nftswap/NFTCard"), {
-  ssr: false,
-  loading: () => (
-    <div className="w-[50px] h-[50px] rounded-lg animate-pulse bg-white/5" />
-  ),
-});
+import { useAppContext } from "@/contexts/AppContext";
 
 export default function NFTSwap() {
   const wallet = useWallet();
   const [pending, setPending] = useState([]);
   const [proposed, setProposed] = useState([]);
+  const {isSigned} = useAppContext()
 
   const loadAssets = useCallback(async () => {
     if (wallet.publicKey != null) {
       try {
         const proposal = await getProposal();
+        console.log(proposal)
         setPending(proposal.pending);
         setProposed(proposal.proposed);
         console.log(proposal)
@@ -39,7 +35,7 @@ export default function NFTSwap() {
   }, [wallet]);
 
   useEffect(() => {
-    loadAssets();
+    if (isSigned) loadAssets();
   }, [loadAssets]);
 
   return (

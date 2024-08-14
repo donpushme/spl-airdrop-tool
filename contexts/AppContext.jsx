@@ -1,12 +1,16 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useMemo } from "react";
 
 export const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
-  const [isSigned, setIsSigned] = useState(false);
+  const setIsSigned = (value = false) => {
+    return value
+  }
+  const isSigned = useMemo(() => setIsSigned, [])
   const [showRightBar, setShowRightBar] = useState(false);
   const [showLeftBar, setShowLeftBar] = useState(false);
   const [mouseTrack, setMouseTrack] = useState(true);
+
   useEffect(() => {
     const handleMouseMove = (event) => {
       if (!mouseTrack) return;

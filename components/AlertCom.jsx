@@ -12,7 +12,7 @@ export const AlertCom = () => {
 
   return (
     alert.visible && (
-      <Alert variant={alert.type} className="w-1/4 fixed bottom-4 right-8">
+      <Alert variant={alert.type} className="w-1/4 fixed bottom-4 right-8 z-50 bg-primary-foreground">
         <AlertTitle>{alert.title}</AlertTitle>
         <AlertDescription>{alert.text}</AlertDescription>
       </Alert>

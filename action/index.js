@@ -28,17 +28,24 @@ export const signIn = async (wallet) => {
     };
     return { alert };
   }
-  
-  const encodedMessage = new TextEncoder().encode(message);
-  
-  try {
-    let signedMessage = await wallet.signMessage(encodedMessage, "utf8");
-    signedMessage = encode(signedMessage);
-    const { data } = await axios.post(`${API_URL}/auth/signin`, {
-      walletAddress,
-      signedMessage,
-    });
 
+  const encodedMessage = new TextEncoder().encode(message);
+  let signedMessage = ""
+
+  try {
+    signedMessage = await wallet.signMessage(encodedMessage, "utf8");
+    signedMessage = encode(signedMessage);
+  } catch (error) {
+    alert = {
+      ...ErrorAlert,
+      title: "User rejected",
+      text: data.msg,
+    };
+    return { alert, isSigned: false };
+  }
+
+  try {
+    const { data } = await axios.post(`${API_URL}/auth/signin`, { walletAddress, signedMessage });
     let alert = {};
     if (!data.success) {
       alert = {
@@ -61,7 +68,7 @@ export const signIn = async (wallet) => {
       title: "Error",
       text: error?.message || JSON.stringify(error),
     };
-    return { alert };
+    return { alert, isSigned: false};
   }
 };
 
@@ -189,7 +196,7 @@ export const proposeNFTSwap = async (address, nfts) => {
     },
     data: data,
   });
-  return response
+  return response;
 };
 
 export const updateProposal = async (
@@ -260,7 +267,7 @@ export const getConfirm = async (id) => {
 };
 
 export const deleteProposal = async (id) => {
-  const url = `/nft-swap/${id}`
+  const url = `/nft-swap/${id}`;
   try {
     const response = await AxiosInstance.request({
       url: url,
@@ -277,18 +284,18 @@ export const deleteProposal = async (id) => {
 };
 
 export const completeProposal = async (id) => {
-  const url = `/nft-swap/${id}`
-  try{
+  const url = `/nft-swap/${id}`;
+  try {
     const response = await AxiosInstance.request({
-      url:url,
+      url: url,
       method: "PATCH",
       headers: {
-        Authorization: `Bearer ${window.localStorage.getItem("token")}`
+        Authorization: `Bearer ${window.localStorage.getItem("token")}`,
       },
     });
-    if(response.data.success) return true
+    if (response.data.success) return true;
   } catch (error) {
-    console.log("error")
+    console.log("error");
     return false;
   }
-}
+};

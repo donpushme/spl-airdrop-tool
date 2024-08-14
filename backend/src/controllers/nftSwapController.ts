@@ -10,14 +10,17 @@ import { Request, Response } from 'express'
 const getProposal = expressAsyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params
   const user = req.user
-
+  
+  console.log(id, user)
   if (id) {
     const proposed = await NFTSwap.findOne({ _id: id });
     res.status(200).json({ success: true, data: proposed })
   } else {
-    const pending = await NFTSwap.find({ userId1: user.walletaddress });
-    const proposed = await NFTSwap.find({ userId2: user.walletaddress })
-    res.status(200).json({ success: true, data: { pending, proposed } })
+    const pending = await NFTSwap.find({ userId1: user.walletaddress, status: Status.Pending});
+    const proposed = await NFTSwap.find({ userId2: user.walletaddress, status: Status.Pending});
+    const completed  = await NFTSwap.find({ $or:[{userId1: user.walletaddress}, {userId2: user.walletaddress}], status: Status.Completed});
+    console.log(pending, proposed, completed)
+    res.status(200).json({ success: true, data: { pending, proposed, completed } })
   }
 })
 

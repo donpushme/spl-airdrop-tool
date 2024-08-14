@@ -13,6 +13,9 @@ import {
   downloadNftAsCsv,
   downloadOwnersAsCsv,
 } from "@/lib/utils";
+import { useAlertContext } from "@/contexts/AlertContext";
+import { SuccessAlert, ErrorAlert } from "@/lib/alerts";
+
 
 export default function Snapshot() {
   const [inputValue, setInputValue] = useState("");
@@ -20,6 +23,7 @@ export default function Snapshot() {
   const [nftOwners, setNftOwners] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isCombining, setIsCombining] = useState(false);
+  const {alert, setAlert } = useAlertContext()
 
   /**
    * Get the list of NFT holders and can continuously combine with new collection holder list
@@ -27,19 +31,21 @@ export default function Snapshot() {
   const getHolderList = useCallback(async () => {
     setNfts([]);
     setIsLoading(true);
-    setIsCombining(true);
     try {
       const res = await inputRouter(inputValue, "holderlist");
-      console.log(res);
       if (res.holderList) {
         setNftOwners(combineTwoHolderList(nftOwners, res.holderList));
-        setIsLoading(false);
+        setIsCombining(true);
         setInputValue("");
       }
     } catch (error) {
-      console.log(error);
-      setIsLoading(false);
+      console.log(error)
+      setAlert({
+        ...ErrorAlert,
+        text: "Something went wrong",
+      });
     }
+    setIsLoading(false);
   }, [inputValue, nftOwners]);
 
   /**

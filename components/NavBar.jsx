@@ -50,18 +50,19 @@ export default function NavBar({ className }) {
 
   const closeModal = () => {
     setIsModalOpen(false);
+    if (!isSigned) sign();
   };
 
   useEffect(() => {
     if (buttonState === "connected") {
       closeModal();
-    } else if(buttonState === "no-wallet") {
-      console.log(buttonState);
+    } else if (buttonState === "no-wallet") {
       setAlert({
         ...ErrorAlert,
         title: "Wallet Disconnected",
         text: "Please connect your wallet",
       });
+      setIsSigned(false);
     }
   }, [buttonState, setAlert]);
 
@@ -84,19 +85,13 @@ export default function NavBar({ className }) {
 
   //SignUp and signIn at once.
   const sign = useCallback(async () => {
-    if (buttonState !== "connected") {
-      setAlert({
-        ...ErrorAlert,
-        title: "Wallet Disconnected",
-        text: "Please connect your wallet",
-      });
-      openModal();
-      return;
+    if (buttonState == "connected") {
+      const response = await signIn(wallet);
+      console.log(response)
+      setAlert(response.alert);
+      setIsSigned(response.isSigned);
+      if(!response.isSigned) onDisconnect()
     }
-    const response = await signIn(wallet);
-    setAlert(response.alert);
-    console.log(response)
-    if (response.isSigned) setIsSigned(true);
   }, [wallet, setAlert, buttonState, setIsSigned]);
 
   //SignOut by removing the token from LocalStorage
@@ -151,7 +146,7 @@ export default function NavBar({ className }) {
           }}
         /> */}
           {/* <ProfileDropDown sign={sign} signOut={signOut} isSigned={isSigned} /> */}
-          <RightBar signIn={sign} signOut={signOut} isSigned={isSigned} />
+          {/* <RightBar signIn={sign} signOut={signOut} isSigned={isSigned} /> */}
         </div>
       </nav>
       <WalletModal isOpen={isModalOpen} onClose={closeModal} />
