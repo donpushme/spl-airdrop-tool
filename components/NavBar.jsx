@@ -26,10 +26,9 @@ import Logo from "./Logo";
 import WalletGenModal from "./airdrop/WalletGenModal";
 
 export default function NavBar({ className }) {
-  const [error, setError] = useState(null);
   const wallet = useWallet();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { alert, setAlert } = useAlertContext();
+  const { setAlert } = useAlertContext();
   const { isSigned, setIsSigned, setShowSideBar, setMouseTrack } =
     useAppContext();
   const { setTheme, theme } = useTheme();
@@ -48,10 +47,11 @@ export default function NavBar({ className }) {
     setIsModalOpen(true);
   };
 
+
   const closeModal = () => {
     setIsModalOpen(false);
-    if (!isSigned) sign();
-  };
+    sign();
+  }
 
   useEffect(() => {
     if (buttonState === "connected") {
@@ -64,7 +64,7 @@ export default function NavBar({ className }) {
       });
       setIsSigned(false);
     }
-  }, [buttonState, setAlert]);
+  }, [buttonState, setAlert, setIsSigned]);
 
   const handleWalletChange = () => {
     switch (buttonState) {
@@ -85,6 +85,7 @@ export default function NavBar({ className }) {
 
   //SignUp and signIn at once.
   const sign = useCallback(async () => {
+    if(isSigned) return;
     if (buttonState == "connected") {
       const response = await signIn(wallet);
       console.log(response)
@@ -92,7 +93,7 @@ export default function NavBar({ className }) {
       setIsSigned(response.isSigned);
       if(!response.isSigned) onDisconnect()
     }
-  }, [wallet, setAlert, buttonState, setIsSigned]);
+  }, [isSigned, buttonState, wallet, setAlert, setIsSigned, onDisconnect]);
 
   //SignOut by removing the token from LocalStorage
   const signOut = useCallback(async () => {
@@ -139,12 +140,6 @@ export default function NavBar({ className }) {
               <Sun />{" "}
             </Button>
           )}
-          {/* <HistoryIcon
-          onClick={() => {
-            setShowSideBar((prev) => !prev);
-            setMouseTrack((prev) => !prev);
-          }}
-        /> */}
           {/* <ProfileDropDown sign={sign} signOut={signOut} isSigned={isSigned} /> */}
           {/* <RightBar signIn={sign} signOut={signOut} isSigned={isSigned} /> */}
         </div>

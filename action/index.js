@@ -30,7 +30,7 @@ export const signIn = async (wallet) => {
   }
 
   const encodedMessage = new TextEncoder().encode(message);
-  let signedMessage = ""
+  let signedMessage = "";
 
   try {
     signedMessage = await wallet.signMessage(encodedMessage, "utf8");
@@ -39,13 +39,16 @@ export const signIn = async (wallet) => {
     alert = {
       ...ErrorAlert,
       title: "User rejected",
-      text: data.msg,
+      text: "Try again",
     };
     return { alert, isSigned: false };
   }
 
   try {
-    const { data } = await axios.post(`${API_URL}/auth/signin`, { walletAddress, signedMessage });
+    const { data } = await axios.post(`${API_URL}/auth/signin`, {
+      walletAddress,
+      signedMessage,
+    });
     let alert = {};
     if (!data.success) {
       alert = {
@@ -68,7 +71,7 @@ export const signIn = async (wallet) => {
       title: "Error",
       text: error?.message || JSON.stringify(error),
     };
-    return { alert, isSigned: false};
+    return { alert, isSigned: false };
   }
 };
 
@@ -161,11 +164,15 @@ export const loadListbyChunks = async (fileName, fileType) => {
   let data;
   try {
     do {
-      data = await fetchPaginatedData(fileName, fileType, page);
+      try {
+        data = await fetchPaginatedData(fileName, fileType, page);
+      } catch (error) {
+        console.log(error);
+      }
       data = data.paginatedData;
       allData = allData.concat(data);
       page++;
-    } while (data.length > 0);
+    } while (data.length > 0 && typeof data != "undefined");
   } catch (error) {
     console.log(error);
   }

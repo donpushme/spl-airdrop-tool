@@ -15,7 +15,7 @@ import {
 } from "@/lib/utils";
 import { useAlertContext } from "@/contexts/AlertContext";
 import { SuccessAlert, ErrorAlert } from "@/lib/alerts";
-
+import { DownloadIcon } from "lucide-react";
 
 export default function Snapshot() {
   const [inputValue, setInputValue] = useState("");
@@ -23,7 +23,7 @@ export default function Snapshot() {
   const [nftOwners, setNftOwners] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isCombining, setIsCombining] = useState(false);
-  const {alert, setAlert } = useAlertContext()
+  const { alert, setAlert } = useAlertContext();
 
   /**
    * Get the list of NFT holders and can continuously combine with new collection holder list
@@ -37,9 +37,11 @@ export default function Snapshot() {
         setNftOwners(combineTwoHolderList(nftOwners, res.holderList));
         setIsCombining(true);
         setInputValue("");
+      } else if(res.alert.visible) {
+        setAlert(res.alert)
       }
     } catch (error) {
-      console.log(error)
+      console.log(error);
       setAlert({
         ...ErrorAlert,
         text: "Something went wrong",
@@ -61,6 +63,10 @@ export default function Snapshot() {
       setInputValue("");
     } catch (error) {
       console.log(error);
+      setAlert({
+        ...ErrorAlert,
+        text: "Something went wrong",
+      });
       setIsLoading(false);
     }
   }, [inputValue, setNfts]);
@@ -96,7 +102,7 @@ export default function Snapshot() {
           <Input
             id="address"
             type="text"
-            className="hover:border-green"
+            className="hover:border-green "
             placeholder="Input address here ..."
             value={inputValue}
             onChange={handleChange}
@@ -120,20 +126,20 @@ export default function Snapshot() {
             `${isCombining ? "combine" : "holderlist"}`
           )}
         </Button>
-        {(nftOwners.length > 0 || nfts.length > 0) && (
+        {/* {(nftOwners.length > 0 || nfts.length > 0) && (
           <Button
             onClick={downloadAsJson}
             className="hover:cursor-pointer h-4 px-4 py-1"
           >
             .json
           </Button>
-        )}
+        )} */}
         {(nftOwners.length > 0 || nfts.length > 0) && (
           <Button
             onClick={downloadAsCsv}
-            className="hover:cursor-pointer h-4 px-4 py-1"
+            className="hover:cursor-pointer px-4 py-1"
           >
-            .csv
+            <DownloadIcon/>
           </Button>
         )}
       </div>

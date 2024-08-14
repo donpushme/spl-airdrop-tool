@@ -3,10 +3,7 @@ import { createContext, useContext, useState, useEffect, useMemo } from "react";
 export const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
-  const setIsSigned = (value = false) => {
-    return value
-  }
-  const isSigned = useMemo(() => setIsSigned, [])
+  const [isSigned, setIsSigned] = useState(false);
   const [showRightBar, setShowRightBar] = useState(false);
   const [showLeftBar, setShowLeftBar] = useState(false);
   const [mouseTrack, setMouseTrack] = useState(true);
@@ -17,18 +14,18 @@ export const AppProvider = ({ children }) => {
       if (event.clientY < 96) return;
 
       if (event.clientX < 20) {
-          setShowLeftBar(true);          
+        setShowLeftBar(true);
       }
 
       if (event.clientX > 300) {
         setShowLeftBar(false);
       }
-      
-      if(event.clientX > window.innerWidth - 20){
-          setShowRightBar(true);
+
+      if (event.clientX > window.innerWidth - 20) {
+        setShowRightBar(true);
       }
 
-      if(event.clientX < window.innerWidth - 300){
+      if (event.clientX < window.innerWidth - 300) {
         setShowRightBar(false);
       }
     };

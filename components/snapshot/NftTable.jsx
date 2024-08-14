@@ -15,7 +15,7 @@ const initialArray = new Array(100).fill(1)
 export default function NftTble(props) {
   const [pages, setPages] = useState(1);
   const [page, setPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(1000);
+  const [rowsPerPage, setRowsPerPage] = useState(20);
   const [rowArray, setRowArray] = useState(initialArray);
   const { nfts } = props;
 

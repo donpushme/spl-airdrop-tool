@@ -11,13 +11,9 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, redirect } from "next/navigation";
 import { useEffect, useState } from "react";
-import {
-  loadListbyChunks,
-  uploadChunk,
-  finalizeUpload,
-} from "@/action";
+import { loadListbyChunks, uploadChunk, finalizeUpload } from "@/action";
 import AirdropTable from "@/components/airdrop/AirdropTable";
 import { useModalContext } from "@/contexts/ModalContext";
 import {
@@ -31,8 +27,12 @@ import {
   getParams,
 } from "@/lib/utils";
 import { startTransferToken } from "@/lib/airdrop";
+import { useAppContext } from "@/contexts/AppContext";
+import Loading from "@/components/Loading";
 
 export default function Airdrop() {
+  const router = useRouter();
+  const { isSigned } = useAppContext();
   const path = usePathname();
   const { wallet, openWalletGenModal } = useModalContext();
   const [list, setList] = useState([]);
@@ -43,11 +43,13 @@ export default function Airdrop() {
   const [address, setAddress] = useState("");
   const [collections, setCollections] = useState([]);
   const [counts, setCounts] = useState([]);
-  const [totalCounts, setTotalCounts] = useState(0)
+  const [totalCounts, setTotalCounts] = useState(0);
   const [multiplier, setMuliplier] = useState(1);
   const [countAirdrop, setCountAirdrop] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    if (!isSigned) return;
     const {
       flag,
       fileName,
@@ -66,7 +68,7 @@ export default function Airdrop() {
       setTotalAmount(totalAmount);
       getList(fileName, fileType);
     }
-  }, []);
+  }, [isSigned, fileName, fileType]);
 
   useEffect(() => {
     if (countAirdrop) {
@@ -85,13 +87,15 @@ export default function Airdrop() {
     } else {
       const resultList = simpleAirdrop(list, totalAmount);
       setList(resultList);
+      setTotalCounts(list.length);
       const url = makeURLwithAmount(path, totalAmount);
       window.history.replaceState({}, "", url);
     }
   }, [counts, multiplier, countAirdrop, totalAmount]);
 
   const getList = async (fileName, fileType) => {
-    if(fileName == "" || fileType == "") return
+    if (fileName == "" || fileType == "") return;
+    setIsLoading(true);
     const data = await loadListbyChunks(fileName, fileType);
     const list = data;
     if (list.length) {
@@ -103,6 +107,7 @@ export default function Airdrop() {
         window.history.replaceState({}, "", removeCountsfromUrl(path));
       }
       setList(list);
+      setIsLoading(false);
     }
   };
 
@@ -110,7 +115,7 @@ export default function Airdrop() {
     setList([]);
     setAmountPerEach("");
     window.history.replaceState({}, "", removeCountsfromUrl(path));
-  }
+  };
 
   /**
    * Upload the file as soon as the user input the file(.json/.csv)
@@ -149,8 +154,6 @@ export default function Airdrop() {
         );
         setFileName(fileName);
         setFileType(fileType);
-        const url = window.location.href;
-        window.location.href = url;
       } catch (error) {
         console.log(error);
       }
@@ -218,16 +221,20 @@ export default function Airdrop() {
                 />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="username">Wallet list</Label>
+                <Label htmlFor="username">
+                  Wallet list{!isSigned && " (Connect wallet first)"}
+                </Label>
                 {list.length > 0 ? (
-                  <Button
-                    className="block"
-                    onClick={clear}
-                  >
+                  <Button className="block" onClick={clear}>
                     New
                   </Button>
                 ) : (
-                  <Input id="wallet_list" type="file" onChange={onChooseFile} />
+                  <Input
+                    id="wallet_list"
+                    type="file"
+                    onChange={onChooseFile}
+                    disabled={!isSigned}
+                  />
                 )}
               </div>
               {collections.length > 0 ? (
@@ -316,6 +323,7 @@ export default function Airdrop() {
           </Card>
         </div>
       </div>
+      {isLoading && <Loading />}
       <AirdropTable list={list} />
     </div>
   );

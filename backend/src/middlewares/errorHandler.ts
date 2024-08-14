@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
-import { CustomError } from '../errors';
-const errorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
+
+const errorHandler = (err: any, req: Request, res: Response, next:NextFunction) => {
     const defaultError = {
         status: err.status || 500,
         message: err.message || 'Something went wrong!',
