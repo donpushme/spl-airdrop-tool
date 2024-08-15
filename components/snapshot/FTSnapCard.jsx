@@ -22,15 +22,15 @@ import react, { useState, useCallback, useEffect } from "react";
 import { ftSnapshot, getTokenPrice } from "@/lib/ftSnapshot";
 import Spinner from "@/components/Assests/spinner/Spinner";
 import { downloadObjectAsJson, downloadOwnersAsCsv } from "@/lib/utils";
+import { useAlertContext } from "@/contexts/AlertContext";
+import { SuccessAlert, ErrorAlert } from "@/lib/alerts";
 
-export function CardWithForm({ ftOwners, setFtOwners }) {
+export default function FTSnapCard({ ftOwners, setFtOwners, isLoading, setIsLoading}) {
+  const {setAlert} = useAlertContext
   const [inputValue, setInputValue] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [thresholdType, setThresholdType] = useState("");
   const [min, setMin] = useState(0);
   const [max, setMax] = useState(0);
-  const [minLabel, setMinLabel] = useState("");
-  const [maxLabel, setMaxLabel] = useState("");
   const [price, setPrice] = useState(0);
 
   /**
@@ -58,11 +58,18 @@ export function CardWithForm({ ftOwners, setFtOwners }) {
         setFtOwners(res);
         setIsLoading(false);
         setInputValue("");
+      } else {
+        setAlert({
+          ErrorAlert, text: "No Owner fetched"
+        })
       }
       setIsLoading(false);
     } catch (error) {
       console.log(error);
       setIsLoading(false);
+      setAlert({
+        ErrorAlert, text: "Something went wrong"
+      })
     }
   }, [inputValue, min, max, thresholdType, price, setFtOwners, setIsLoading]);
 
@@ -106,7 +113,6 @@ export function CardWithForm({ ftOwners, setFtOwners }) {
             <div className="flex flex-col space-y-1.5">
               <Label htmlFor="name">Address</Label>
               <Input
-                className="hover:border-green"
                 id="name"
                 placeholder="Address here"
                 value={inputValue}
@@ -160,9 +166,9 @@ export function CardWithForm({ ftOwners, setFtOwners }) {
         {ftOwners.length > 0 && (
           <div className="flex gap-4 items-center">
             Download
-            <Button onClick={downloadAsJson} className="hover:cursor-pointer">
+            {/* <Button onClick={downloadAsJson} className="hover:cursor-pointer">
               .json
-            </Button>
+            </Button> */}
             <Button onClick={downloadAsCsv} className="hover:cursor-pointer">
               .csv
             </Button>

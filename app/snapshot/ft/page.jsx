@@ -4,15 +4,22 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useCallback, useState, useEffect } from "react";
 import FTOwnerTable from "@/components/snapshot/FTOwberTable";
-import { CardWithForm } from "@/components/snapshot/FTCard";
+import FTSnapCard from "@/components/snapshot/FTSnapCard";
+import Loading from "@/components/Loading";
 
 export default function Snapshot() {
-  const [inputValue, setInputValue] = useState("");
   const [ftOwners, setFtOwners] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   return (
     <div className="w-full">
-      <CardWithForm ftOwners={ftOwners} setFtOwners={setFtOwners}/>
+      <FTSnapCard
+        ftOwners={ftOwners}
+        setFtOwners={setFtOwners}
+        isLoading={isLoading}
+        setIsLoading={setIsLoading}
+      />
+      {isLoading && <Loading />}
       <FTOwnerTable ftOwners={ftOwners} />
     </div>
   );
