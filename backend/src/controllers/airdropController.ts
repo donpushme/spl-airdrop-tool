@@ -8,6 +8,7 @@ import Papa from 'papaparse'
 import { startTransferToken } from "../utils/solana";
 import Airdrop, { IAirdrop } from "../model/airdrop";
 import { AuthRequest } from "../middlewares/authMiddleware";
+// import { uploadFiletoS3 } from "../utils/S3";
 
 /**
  * This is for saving big list file by chunk
@@ -41,7 +42,7 @@ const finalUpload = (req: Request, res: Response) => {
   const { uploadId, fileType } = req.body;
   const destinationPath = path.join('uploads', uploadId);
   const randomFileName = uuid(); // Randomly generated file name with .data extension
-  const finalFilePath = path.join('uploads', `${randomFileName}.${fileType}`);
+  const finalFilePath = path.join('uploads', `${randomFileName}.csv`);
 
   const writeStream = fs.createWriteStream(finalFilePath);
   const chunks = fs.readdirSync(destinationPath).sort();
@@ -52,6 +53,8 @@ const finalUpload = (req: Request, res: Response) => {
     writeStream.write(data);
     fs.unlinkSync(chunkPath); // Remove chunk after writing
   });
+
+  // uploadFiletoS3(finalFilePath)
 
   writeStream.end(() => {
     fs.rmdirSync(destinationPath);
@@ -69,8 +72,7 @@ const loadList = expressAsyncHandler(async (req: Request, res: Response) => {
   const start = (page - 1) * perPage;
   const end = start + perPage;
   const { fileName, fileType } = req.body;
-  const dir = `uploads\\${fileName}.${fileType}`
-  console.log(dir)
+  const dir = `uploads\\${fileName}.csv`
   const data = await readListFromFile(dir);
 
   const paginatedData = data.slice(start, end);
