@@ -22,8 +22,9 @@ import { SuccessAlert, ErrorAlert } from "@/lib/alerts";
 import { useTheme } from "next-themes";
 import { NavMenu } from "./NavMenu";
 import { signIn } from "@/action";
-import Logo from "./Logo";
 import WalletGenModal from "./airdrop/WalletGenModal";
+import dynamic from "next/dynamic";
+const Logo = dynamic(() => import("./Logo"), { ssr: false });
 
 export default function NavBar({ className }) {
   const wallet = useWallet();
@@ -47,11 +48,10 @@ export default function NavBar({ className }) {
     setIsModalOpen(true);
   };
 
-
   const closeModal = () => {
     setIsModalOpen(false);
     sign();
-  }
+  };
 
   useEffect(() => {
     if (buttonState === "connected") {
@@ -85,13 +85,13 @@ export default function NavBar({ className }) {
 
   //SignUp and signIn at once.
   const sign = useCallback(async () => {
-    if(isSigned) return;
+    if (isSigned) return;
     if (buttonState == "connected") {
       const response = await signIn(wallet);
-      console.log(response)
+      console.log(response);
       setAlert(response.alert);
       setIsSigned(response.isSigned);
-      if(!response.isSigned) onDisconnect()
+      if (!response.isSigned) onDisconnect();
     }
   }, [isSigned, buttonState, wallet, setAlert, setIsSigned, onDisconnect]);
 
@@ -107,37 +107,42 @@ export default function NavBar({ className }) {
       <WalletGenModal />
       <AlertCom />
       <nav
-        className={`${className} fixed w-full flex justify-between border-border h-20 items-center px-4 backdrop-blur-sm bg-primary-background/30 border-b`}
+        className={`${className} fixed w-full flex justify-between border-border items-center py-4 px-8 backdrop-blur-sm bg-primary-background/30`}
       >
         <div className="flex gap-8">
           <Logo />
           <NavMenu />
         </div>
         <div className="flex gap-2">
-          <Button onClick={handleWalletChange}>
-            <Wallet2Icon className="mr-3" />
+          <Button
+            onClick={handleWalletChange}
+            className="h-[52px] rounded-[6px] border-0 py-[8px] px-[16px]"
+          >
+            <Wallet2Icon size={20} className="mr-3" />
             {buttonState == "no-wallet" ? "Connect" : "Disconnect"}
           </Button>
           {mode == "light" && (
             <Button
+              className="h-[52px] rounded-[6px] border-0 p-[16px]"
               onClick={() => {
                 setTheme("dark");
                 setMode("dark");
               }}
             >
               {" "}
-              <Moon />
+              <Moon size={20} />
             </Button>
           )}
           {mode == "dark" && (
             <Button
+              className="h-[52px] rounded-[6px] border-0 p-[16px]"
               onClick={() => {
                 setTheme("light");
                 setMode("light");
               }}
             >
               {" "}
-              <Sun />{" "}
+              <Sun size={20} />{" "}
             </Button>
           )}
           {/* <ProfileDropDown sign={sign} signOut={signOut} isSigned={isSigned} /> */}

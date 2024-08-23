@@ -95,6 +95,7 @@ export default function Airdrop() {
 
   const getList = async (fileName, fileType) => {
     if (fileName == "" || fileType == "") return;
+    console.log("hi")
     setIsLoading(true);
     const data = await loadListbyChunks(fileName, fileType);
     const list = data;

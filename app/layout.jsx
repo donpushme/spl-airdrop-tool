@@ -3,10 +3,10 @@ import "./globals.css";
 import Providers from "@/components/Providers";
 import dynamic from "next/dynamic";
 import LeftBar from "@/components/LeftBar";
-const NavBar = dynamic(() => import("@/components/NavBar"), {
-  ssr: false,
-  loading: () => <div className=""></div>,
-});
+import Footer from "@/components/Footer";
+const NavBar = dynamic(() => import("@/components/NavBar"), { ssr: false,});
+
+const BackImage = dynamic(()=> import("@/components/BackImage"),{ ssr: false})
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,11 +22,13 @@ export default function RootLayout({ children }) {
         <Providers>
           <NavBar className="z-30" />
           {/* <LeftBar /> */}
-          <div className="flex">
-            <div className="flex justify-center items-center w-full pt-28">
+          <BackImage />
+          <div className="flex w-full overflow-hidden min-h-[calc(100vh-50px)]">
+            <div className="flex justify-center w-full pt-28">
               {children}
             </div>
           </div>
+          <Footer />
         </Providers>
       </body>
     </html>
