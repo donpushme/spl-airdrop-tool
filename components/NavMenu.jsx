@@ -81,8 +81,8 @@ export function NavMenu() {
               <ListItem href="/snapshot/nft" title="NFT Snapshot">
                 Get owner of nft and combine with the other colletions
               </ListItem>
-              <ListItem href="/snapshot/ft" title="Fungible Token Snapshot">
-                Get all holders of token and airdrop
+              <ListItem href="/snapshot/ft" title="Token Snapshot">
+                Get all holders a of token and airdrop
               </ListItem>
               <ListItem href="/airdrop/inputfile" title="Airdrop">
                 Airdrop your token to users

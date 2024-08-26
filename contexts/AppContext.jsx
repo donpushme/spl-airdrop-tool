@@ -8,6 +8,7 @@ export const AppProvider = ({ children }) => {
   const [showLeftBar, setShowLeftBar] = useState(false);
   const [mouseTrack, setMouseTrack] = useState(true);
   const [mint, setMint] = useState("");
+  const [price, setPrice] = useState(0);
 
   useEffect(() => {
     const handleMouseMove = (event) => {
@@ -45,11 +46,13 @@ export const AppProvider = ({ children }) => {
         showRightBar,
         showLeftBar,
         mint,
+        price,
         setShowLeftBar,
         setShowRightBar,
         setIsSigned,
         setMouseTrack,
-        setMint
+        setMint,
+        setPrice
       }}
     >
       {children}

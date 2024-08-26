@@ -15,18 +15,18 @@ import { ProfileIcon, UserListIcon } from "../Assests/icons/Icon";
 import { Switch } from "../ui/switch";
 import { useAppContext } from "@/contexts/AppContext";
 import { useRouter } from "next/navigation";
+import { ErrorAlert } from "@/lib/alerts";
+import { useAlertContext } from "@/contexts/AlertContext";
 
 export default function NFTSnapCard({ params }) {
-  const {
-    showCollections,
-    setShowCollections,
-  } = params;
+  const { showCollections, setShowCollections } = params;
   const { mint, setMint } = useAppContext();
+  const {Alertm, setAlert} = useAlertContext();
   const router = useRouter();
 
   const handleChange = (e) => {
-    setMint(e.target.value)
-  }
+    setMint(e.target.value);
+  };
 
   return (
     <Card className="w-[95%] md:w-[700px] mx-auto mb-12 hover:border-green border-0">
@@ -66,7 +66,9 @@ export default function NFTSnapCard({ params }) {
           <Button
             className="flex  gap-2"
             onClick={() => {
-              router.push(`/snapshot/nft/hashlist/${mint}`);
+              if (mint.length > 0)
+                router.push(`/snapshot/nft/hashlist/${mint}`);
+              else setAlert({...ErrorAlert, text:"Input the mint address"})
             }}
           >
             <ProfileIcon />
@@ -76,7 +78,9 @@ export default function NFTSnapCard({ params }) {
           <Button
             className="flex gap-2"
             onClick={() => {
-              router.push(`/snapshot/nft/holderlist/${mint}`);
+              if (mint.length > 0)
+                router.push(`/snapshot/nft/holderlist/${mint}`);
+              else setAlert({...ErrorAlert, text:"Input the mint address"})
             }}
           >
             <UserListIcon />

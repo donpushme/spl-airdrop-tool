@@ -1,5 +1,5 @@
 import { AxiosInstance, MemoryStoredToken } from "@/lib/utils";
-import { encode } from "bs58";
+import bs58 from "bs58";
 import { API_URL } from "@/config";
 import axios from "axios";
 import { SuccessAlert, ErrorAlert } from "@/lib/alerts";
@@ -34,7 +34,7 @@ export const signIn = async (wallet) => {
 
   try {
     signedMessage = await wallet.signMessage(encodedMessage, "utf8");
-    signedMessage = encode(signedMessage);
+    signedMessage = bs58.encode(signedMessage);
   } catch (error) {
     alert = {
       ...ErrorAlert,

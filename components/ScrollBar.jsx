@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 const Scrollbar = ({ children, className, ...props }) => {
   const contentRef = useRef(null);

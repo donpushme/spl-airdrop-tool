@@ -333,3 +333,87 @@ export const RocketIcon = (props) => (
     />
   </svg>
 );
+
+export const SortIcon = (props) => (
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    {...props}
+  >
+    <path
+      d="M11 10H18"
+      stroke="#64748B"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M11 14H16"
+      stroke="#64748B"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M11 18H14"
+      stroke="#64748B"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M11 6H21"
+      stroke="#64748B"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M7 18.8125C6.60678 19.255 5.56018 21 5 21M5 21C4.43982 21 3.39322 19.255 3 18.8125M5 21V15"
+      stroke="#64748B"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M3 5.1875C3.39322 4.74501 4.43982 3 5 3M5 3C5.56018 3 6.60678 4.74501 7 5.1875M5 3V9"
+      stroke="#64748B"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+export const HelpIcon = () => (
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 14 14"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M12.8332 7.00002C12.8332 3.77836 10.2215 1.16669 6.99984 1.16669C3.77817 1.16669 1.1665 3.77836 1.1665 7.00002C1.1665 10.2217 3.77817 12.8334 6.99984 12.8334C10.2215 12.8334 12.8332 10.2217 12.8332 7.00002Z"
+      stroke="#969696"
+      strokeWidth="1.16667"
+    />
+    <path
+      d="M7.14144 9.91669V7.00002C7.14144 6.72504 7.14144 6.58755 7.05598 6.50209C6.97058 6.41669 6.83309 6.41669 6.55811 6.41669"
+      stroke="#969696"
+      strokeWidth="1.16667"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M6.99561 4.66669H7.00261"
+      stroke="#969696"
+      strokeWidth="1.55556"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);

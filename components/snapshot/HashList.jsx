@@ -52,11 +52,11 @@ export default function HashList(props) {
         <div className="flex justify-between items-center">
           <div>{`${list.length} NFTS`}</div>
           <div className="flex gap-4">
-            <Button className="flex gap-4" onClick={downloadAsJson}>
+            <Button className="flex gap-4 h-10" onClick={downloadAsCsv}>
               <DownloadIcon size={20} />
               Download
             </Button>
-            <Button className="flex gap-4" onClick={() => {
+            <Button className="flex gap-4 h-10" onClick={() => {
               router.push("/airdrop/inputfile")
             }}>
               <RocketIcon size={20} />

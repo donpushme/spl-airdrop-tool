@@ -42,7 +42,7 @@ export default function NFTSnapResultHead({ params }) {
       } else if (res.alert.visible) {
         setAlert(res.alert);
       } else {
-        setAlert({ ErrorAlert, text: "Something went wrong" });
+        setAlert({ ...ErrorAlert, text: "Something went wrong" });
       }
     } catch (error) {
       console.log(error);
