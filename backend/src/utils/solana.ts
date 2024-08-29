@@ -6,9 +6,9 @@ import { CONNECTION } from '../config';
 import { getAssociatedTokenAddressSync, createAssociatedTokenAccountInstruction, createTransferInstruction, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { getKeypairFromEnvironment } from "@solana-developers/helpers";
 import { CustomError } from '../errors';
-import { readListFromFile } from '../controllers/airdropController';
 import 'dotenv/config';
 import fs from 'fs'
+import { readListFromFile } from './file';
 
 export const connection = new Connection(CONNECTION, 'confirmed');
 
