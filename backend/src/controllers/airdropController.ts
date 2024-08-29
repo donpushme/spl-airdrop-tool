@@ -8,6 +8,7 @@ import Papa from 'papaparse'
 import { startTransferToken } from "../utils/solana";
 import Airdrop, { IAirdrop } from "../model/airdrop";
 import { AuthRequest } from "../middlewares/authMiddleware";
+import { upload } from "../utils/s3";
 // import { uploadFiletoS3 } from "../utils/S3";
 
 /**
@@ -123,4 +124,9 @@ const transferToken = expressAsyncHandler(async (req: AuthRequest, res: Response
 
 })
 
-export { chunkUpload, finalUpload, loadList, transferToken }
+const uploadToS3 = expressAsyncHandler(async (req: Request, res: Response) => {
+  const result = await upload();
+  res.status(200).json({result})
+})
+
+export { chunkUpload, finalUpload, loadList, transferToken, uploadToS3 }
