@@ -2,7 +2,9 @@ import { GetObjectCommand, PutObjectCommand, S3Client, S3 } from "@aws-sdk/clien
 import dotenv from 'dotenv'
 import fs from "fs";
 import path from 'path';
-import { deleteFile, readListFromFile } from "./file";
+import { deleteFile, readListFromFile, readStrFromFile } from "./file";
+import { Readable } from 'stream';
+import { createWriteStream } from "fs";
 dotenv.config()
 
 
@@ -19,14 +21,16 @@ const client = new S3Client({
     secretAccessKey,
   },
   region: region,
+  endpoint: "https://eu-central-2.wasabisys.com",
+  forcePathStyle: true, // Optional, depending on endpoint requirements
 });
 
 export const upload = async (fileName: string) => {
-  console.log(region);
-  console.log(Bucket);
-  console.log(accessKeyId);
 
-  const data = readListFromFile(path.join('uploads', fileName));
+  console.log("uploading fileName", fileName)
+
+  const data = await readStrFromFile(path.join('uploads', fileName));
+  console.log(data);
   const command = new PutObjectCommand({
     Bucket: Bucket,
     Key: fileName,
@@ -35,7 +39,7 @@ export const upload = async (fileName: string) => {
 
   try {
     const response = await client.send(command);
-    console.log(response);
+    console.log("Upload response==============>", response);
     deleteFile(path.join('uploads', fileName));
   } catch (err) {
     console.error(err);
@@ -43,6 +47,8 @@ export const upload = async (fileName: string) => {
 };
 
 export const download = async (fileName: string) => {
+
+  console.log("downloading ", fileName)
   const params = { Bucket, Key: fileName };
 
   const command = new GetObjectCommand(params);
@@ -50,9 +56,10 @@ export const download = async (fileName: string) => {
   try {
     const response = await client.send(command);
     // The Body object also has 'transformToByteArray' and 'transformToWebStream' methods.
-    const str: any = await response.Body?.transformToString();
-    fs.writeFileSync(path.join('uploads', fileName), str);
-    console.log(str);
+    let str: any = await response.Body?.transformToString(); console.log(JSON.parse(str))
+    // const arr: any = await response.Body?.transformToByteArray(); console.log(arr)
+
+    fs.writeFileSync(path.join('uploads', fileName), JSON.parse(str));
   } catch (err) {
     console.error(err);
   }

@@ -4,7 +4,6 @@ import { SIGN_MESSAGE } from '../config';
 import { Connection, PublicKey, Transaction, SystemProgram, sendAndConfirmTransaction, Keypair } from '@solana/web3.js';
 import { CONNECTION } from '../config';
 import { getAssociatedTokenAddressSync, createAssociatedTokenAccountInstruction, createTransferInstruction, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { getKeypairFromEnvironment } from "@solana-developers/helpers";
 import { CustomError } from '../errors';
 import 'dotenv/config';
 import fs from 'fs'
