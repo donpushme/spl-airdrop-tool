@@ -99,7 +99,7 @@ const transferToken = expressAsyncHandler(async (req: AuthRequest, res: Response
 })
 
 const uploadToS3 = expressAsyncHandler(async (req: Request, res: Response) => {
-  const result = await upload();
+  const result = await upload(path.join("uploads", "6PUfIpnXBwuOuTTy.csv"));
   res.status(200).json({result})
 })
 
