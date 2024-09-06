@@ -2,20 +2,15 @@
 
 import { useState, useEffect, useCallback } from "react";
 import {
-  UserIcon,
-  UserRound,
   Wallet2Icon,
   Moon,
   Sun,
-  SunMoon,
-  HistoryIcon,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useWalletMultiButton } from "@solana/wallet-adapter-base-ui";
-import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { useWallet } from "@solana/wallet-adapter-react";
 import WalletModal from "@/components/WalletModal";
 import { AlertCom } from "@/components/AlertCom";
-import RightBar from "@/components/RightBar";
 import { useAppContext } from "@/contexts/AppContext";
 import { useAlertContext } from "@/contexts/AlertContext";
 import { SuccessAlert, ErrorAlert } from "@/lib/alerts";
@@ -30,18 +25,12 @@ export default function NavBar({ className }) {
   const wallet = useWallet();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { setAlert } = useAlertContext();
-  const { isSigned, setIsSigned, setShowSideBar, setMouseTrack } =
-    useAppContext();
+  const { isSigned, setIsSigned, setShowSideBar, setMouseTrack } = useAppContext();
   const { setTheme, theme } = useTheme();
   const [mode, setMode] = useState(theme);
   const {
     buttonState,
-    onConnect,
     onDisconnect,
-    onSelectWallet,
-    publicKey,
-    walletIcon,
-    walletName,
   } = useWalletMultiButton({});
 
   const openModal = () => {
@@ -145,8 +134,6 @@ export default function NavBar({ className }) {
               <Sun size={20} />{" "}
             </Button>
           )}
-          {/* <ProfileDropDown sign={sign} signOut={signOut} isSigned={isSigned} /> */}
-          {/* <RightBar signIn={sign} signOut={signOut} isSigned={isSigned} /> */}
         </div>
       </nav>
       <WalletModal isOpen={isModalOpen} onClose={closeModal} />

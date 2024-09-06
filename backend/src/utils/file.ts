@@ -29,6 +29,25 @@ export const readListFromFile = async (dir: string) => {
   }
 }
 
-export const deleteFile = async (filePath:string) => {
+export const readStrFromFile = async (dir: string) => {
+  return new Promise((resolve, reject) => {
+    const result: any[] = [];
+
+    const readStream = fs.createReadStream(dir, { encoding: 'utf-8' });
+    readStream.on('data', (chunk) => {
+      result.push(chunk);
+    });
+
+    readStream.on('end', () => {
+      resolve(result.join(''));
+    });
+
+    readStream.on('error', (error) => {
+      reject(new CustomError(500, `Error reading CSV file: ${error.message}`));
+    });
+  });
+}
+
+export const deleteFile = async (filePath: string) => {
   fs.unlinkSync(filePath);
 }

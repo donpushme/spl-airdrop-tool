@@ -8,7 +8,9 @@ import { readListFromFile } from "../utils/file";
 import { startTransferToken } from "../utils/solana";
 import Airdrop, { IAirdrop } from "../model/airdrop";
 import { AuthRequest } from "../middlewares/authMiddleware";
-import { upload } from "../utils/s3";
+import { upload, download } from "../utils/s3";
+import { deleteFile } from "../utils/file"; 
+// import { download } from "../utils/s3-v2";
 // import { uploadFiletoS3 } from "../utils/S3";
 
 /**
@@ -58,8 +60,8 @@ const finalUpload = expressAsyncHandler( async (req: Request, res: Response) => 
   
   writeStream.end(async () => {
     fs.rmdirSync(destinationPath);
+    console.log("uploading to S3")
     const response = await upload(`${randomFileName}.csv`);
-    console.log(response)
     res.status(200).json({ success: true, message: 'File upload complete', fileName: randomFileName, fileType });
   });
 })
@@ -75,9 +77,12 @@ const loadList = expressAsyncHandler(async (req: Request, res: Response) => {
   const end = start + perPage;
   const { fileName, fileType } = req.body;
   const dir = path.join(`uploads`,`${fileName}.csv`);
+  await download(`${fileName}.csv`);
   const data = await readListFromFile(dir);
 
   const paginatedData = data.slice(start, end);
+
+  deleteFile(path.join('uploads', fileName));
 
   if (data) res.status(200).json({ paginatedData })
   else throw new CustomError(500, 'Reading file error')
@@ -95,12 +100,6 @@ const transferToken = expressAsyncHandler(async (req: AuthRequest, res: Response
   } else {
     throw new CustomError(500, 'Internal Server Error')
   }
-
 })
 
-const uploadToS3 = expressAsyncHandler(async (req: Request, res: Response) => {
-  const result = await upload(path.join("uploads", "6PUfIpnXBwuOuTTy.csv"));
-  res.status(200).json({result})
-})
-
-export { chunkUpload, finalUpload, loadList, transferToken, uploadToS3 }
+export { chunkUpload, finalUpload, loadList, transferToken }
