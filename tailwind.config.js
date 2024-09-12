@@ -18,6 +18,7 @@ module.exports = {
     },
     extend: {
       colors: {
+        disabled: "#474747",
         sky: "hsl(var(--sky))",
         green: "hsl(var(--green))",
         border: "hsl(var(--border))",

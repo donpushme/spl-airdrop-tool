@@ -417,3 +417,16 @@ export const HelpIcon = () => (
     />
   </svg>
 );
+
+export const RightArrow = () => (
+  <svg width="6" height="10" viewBox="0 0 6 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M1 9L5 5L1 1" stroke="white" strokeWidth="1.33333" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+)
+
+export const UploadIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M7.00016 4.3335L7.00016 9.66683M7.00016 4.3335C6.53334 4.3335 5.66118 5.66303 5.3335 6.00016M7.00016 4.3335C7.46698 4.3335 8.33914 5.66303 8.66683 6.00016" stroke="white" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M0.666656 6.99996C0.666656 4.0144 0.666656 2.52162 1.59415 1.59412C2.52165 0.666626 4.01443 0.666626 6.99999 0.666626C9.98555 0.666626 11.4783 0.666626 12.4058 1.59412C13.3333 2.52162 13.3333 4.0144 13.3333 6.99996C13.3333 9.98552 13.3333 11.4783 12.4058 12.4058C11.4783 13.3333 9.98555 13.3333 6.99999 13.3333C4.01443 13.3333 2.52165 13.3333 1.59415 12.4058C0.666656 11.4783 0.666656 9.98552 0.666656 6.99996Z" stroke="white" />
+  </svg>
+)

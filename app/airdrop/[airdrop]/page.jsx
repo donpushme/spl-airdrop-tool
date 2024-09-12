@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { usePathname, useRouter, redirect } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { loadListbyChunks, uploadChunk, finalizeUpload } from "@/action";
 import AirdropTable from "@/components/airdrop/AirdropTable";
 import { useModalContext } from "@/contexts/ModalContext";
@@ -29,12 +29,19 @@ import {
 import { startTransferToken } from "@/lib/airdrop";
 import { useAppContext } from "@/contexts/AppContext";
 import Loading from "@/components/Loading";
+import Heading from "@/components/airdrop/Heading";
+import { HelpIcon, RightArrow, RocketIcon, UploadIcon } from "@/components/Assests/icons/Icon";
+import Link from "next/link";
+import WalletToken from "@/components/airdrop/WalletTokens";
+import { fetchWalletTokens, getWalletAssets } from "@/lib/solana";
+import { useWallet } from "@solana/wallet-adapter-react";
+
 
 export default function Airdrop() {
   const router = useRouter();
   const { isSigned } = useAppContext();
   const path = usePathname();
-  const { wallet, openWalletGenModal } = useModalContext();
+  const { tempWallet, openWalletGenModal } = useModalContext();
   const [list, setList] = useState([]);
   const [fileName, setFileName] = useState("");
   const [fileType, setFileType] = useState("");
@@ -47,6 +54,9 @@ export default function Airdrop() {
   const [multiplier, setMuliplier] = useState(1);
   const [countAirdrop, setCountAirdrop] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const inputFile = useRef(null);
+  const wallet = useWallet();
+  const [walletTokens, setWalletTokens] = useState([]);
 
   useEffect(() => {
     if (!isSigned) return;
@@ -116,6 +126,11 @@ export default function Airdrop() {
     setAmountPerEach("");
     window.history.replaceState({}, "", removeCountsfromUrl(path));
   };
+
+  const getWalletTokens = useCallback(async () => {
+    const tokens = await fetchWalletTokens(wallet.publicKey);
+    setWalletTokens(tokens)
+  }, [wallet])
 
   /**
    * Upload the file as soon as the user input the file(.json/.csv)
@@ -188,7 +203,7 @@ export default function Airdrop() {
   };
 
   const handleAirdrop = () => {
-    startTransferToken(list, wallet, address, setList);
+    startTransferToken(list, tempWallet, address, setList);
   };
 
   const handleCountChange = (e, index) => {
@@ -203,40 +218,55 @@ export default function Airdrop() {
   return (
     <div>
       <div defaultValue="default" className="w-[900px]">
+        <Heading steps={[true, false, false]} />
         <div value="default">
-          <Card>
-            <CardHeader>
-              <CardTitle>Airdrop</CardTitle>
-              <CardDescription>
-                You can airdrop your token to the list of wallet account.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-1">
-                <Label htmlFor="name">Token Address</Label>
-                <Input
-                  id="address"
-                  placeholder="Input the token address here"
-                  value={address}
-                  onChange={handleAddressChange}
-                />
+          <div className="p-8 border rounded-xl">
+            <div className="space-y-6">
+              <div className="space-y-1 relative">
+                <div className="flex gap-2">
+                  <Label htmlFor="name">Token Address</Label>
+                  <HelpIcon />
+                </div>
+                <div className="text-disabled text-xs italic">Connect your wallet to choose tokens directly from your wallet</div>
+                <div className="flex border rounded-md">
+                  <Input
+                    id="address"
+                    placeholder="Select Tokens / Input token address"
+                    className="placeholder-disabled p-4 border-0 w-[calc(100%-120px)]"
+                    value={address}
+                    onChange={handleAddressChange}
+                  />
+                  <button className="w-[120px] border-l text-xs bg-primary-foreground/50 rounded-r-md flex gap-2 items-center justify-center" onClick={getWalletTokens}>Explore Wallet<RightArrow /></button>
+                </div>
+                <WalletToken tokens={walletTokens} />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="username">
-                  Wallet list{!isSigned && " (Connect wallet first)"}
-                </Label>
-                {list.length > 0 ? (
-                  <Button className="block" onClick={clear}>
-                    New
-                  </Button>
-                ) : (
-                  <Input
+                <div className="flex gap-2">
+                  <Label htmlFor="username">Import Wallet list</Label>
+                  <HelpIcon />
+                </div>
+                <div className="text-disabled text-xs italic">Connect your wallet to get your previous snapshots or upload snapshot file</div>
+                <div className="flex border rounded-md">
+                  <Input className="p-4 border-0 w-[calc(100%-120px)]" placeholder="Choose from account" disabled={!isSigned} />
+                  <input
+                    ref={inputFile}
                     id="wallet_list"
                     type="file"
+                    className="hidden"
                     onChange={onChooseFile}
-                    disabled={!isSigned}
                   />
-                )}
+                  <Button className="w-[120px] border-l text-xs bg-primary-foreground/50 rounded-r-md flex gap-2 items-center justify-center" disabled={!isSigned} onClick={() => {
+                    console.log(inputFile.current)
+                    inputFile.current.click();
+                  }}>Upload File<UploadIcon /></Button>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <div className="flex gap-1 items-center">
+                  <Label>Dont't have snapshot list?</Label>
+                  <Link href="/snapshot/ft" className="text-green text-sm">Click here</Link>
+                </div>
+                <Button className="flex border border-green p-4 w-full gap-1"><RocketIcon />Get Started</Button>
               </div>
               {collections.length > 0 ? (
                 <>
@@ -311,9 +341,9 @@ export default function Airdrop() {
                   />
                 </div>
               </div>
-            </CardContent>
+            </div>
             <CardFooter>
-              {wallet.length == 0 ? (
+              {tempWallet.length == 0 ? (
                 <Button onClick={generateWallet}>
                   Generate temporay wallet
                 </Button>
@@ -321,7 +351,7 @@ export default function Airdrop() {
                 <Button onClick={handleAirdrop}>Airdrop</Button>
               )}
             </CardFooter>
-          </Card>
+          </div>
         </div>
       </div>
       {isLoading && <Loading />}
