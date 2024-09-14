@@ -5,8 +5,9 @@ import Spinner_1 from "../Assests/spinner/Spinner_1";
 import Spinner from "../Assests/spinner/Spinner";
 
 
-export default function WalletToken({ tokens, setShowWalletTokens, isLoading, setAddress }) {
+export default function UploadedFile({ files, setShowUploadedFile, isLoading, setFileName, setFileType }) {
     const newRef = useRef(null); // Typing the ref correctly
+    const [fileText, setFileText] = useState("")
 
     useEffect(() => {
         const handleOutsideClick = (e) => {
@@ -22,7 +23,7 @@ export default function WalletToken({ tokens, setShowWalletTokens, isLoading, se
     }, []); // Ensure the effect has an empty dependency array to prevent it from running on every render
 
     const closeMenu = () => {
-        setShowWalletTokens(false)
+        setShowUploadedFile(false)
     }
 
     const selectToken = (address) => {
@@ -31,14 +32,14 @@ export default function WalletToken({ tokens, setShowWalletTokens, isLoading, se
     }
 
     // const { tokens, loading, error } = useWalletTokens();
-    console.log(tokens)
+    console.log(files)
     return (
         <div className="absolute top-full bg-background w-[calc(100%-120px)] border rounded-sm p-2" ref={newRef}>
             <div className="scrollbar max-h-[200px] p-2">
                 {isLoading ? <div className="mx-auto">
                     <Spinner />
                 </div> : <div className="">
-                    {tokens.map((token, index) => {
+                    {files.map((token, index) => {
                         const image = token.symbol == "SOL" ? "/token/solana.png" : token.image;
                         return (
                             <div className="flex gap-2 text-xs items-center w-full border-b p-2 hover:cursor-pointer" key={index} onClick={() => selectToken((token.mint))}>

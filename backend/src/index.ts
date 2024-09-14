@@ -36,7 +36,7 @@ app.get("/", authMiddleware, (req: AuthRequest, res: Response) => {
 })
 
 app.use("/auth", authRouter);
-app.use("/airdrop", airdropRouter);
+app.use("/airdrop", authMiddleware, airdropRouter);
 app.use("/nft-swap", authMiddleware, nftSwapRouter);
 
 //For catching 404 Error

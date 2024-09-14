@@ -6,7 +6,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useAlertContext } from "@/contexts/AlertContext";
 import { ErrorAlert, SuccessAlert } from "@/lib/alerts";
 import Spinner_1 from "@/components/Assests/spinner/Spinner_1";
-import FTOwnerTable from "@/components/snapshot/FTOwberTable";
+import FTOwnerTable from "@/components/snapshot/FTOwnerTable";
 import { getParams, ftSnapshot } from "@/lib/ftSnapshot";
 
 export default function Page() {

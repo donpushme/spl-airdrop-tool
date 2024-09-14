@@ -94,7 +94,7 @@ export const uploadChunk = async (chunk, uploadId, chunkIndex) => {
   }
 };
 
-export const finalizeUpload = async (uploadId, fileType) => {
+export const finalizeUpload = async (uploadId) => {
   const response = await AxiosInstance.request({
     url: "/airdrop/final-upload",
     method: "POST",
@@ -104,13 +104,12 @@ export const finalizeUpload = async (uploadId, fileType) => {
     },
     data: JSON.stringify({
       uploadId,
-      fileType,
     }),
   });
   return response.data;
 };
 
-export const getList = async (fileName, fileType) => {
+export const getList = async (fileId) => {
   try {
     const response = await AxiosInstance.request({
       url: "/airdrop/loadlist",
@@ -120,8 +119,7 @@ export const getList = async (fileName, fileType) => {
         Authorization: `Bearer ${window.localStorage.getItem("token")}`,
       },
       data: {
-        fileName,
-        fileType,
+        fileId,
       },
     });
     return response.data;
@@ -131,11 +129,12 @@ export const getList = async (fileName, fileType) => {
 };
 
 const fetchPaginatedData = async (
-  fileName,
-  fileType,
-  page = 1,
-  perPage = 10000
+  fileId,
+  page,
+  isFinal,
 ) => {
+  const perPage = 10000;
+  const isBeginning = page == 1 ? true : false;
   try {
     const response = await AxiosInstance.request({
       url: "/airdrop/loadlist",
@@ -145,10 +144,11 @@ const fetchPaginatedData = async (
         Authorization: `Bearer ${window.localStorage.getItem("token")}`,
       },
       data: {
-        fileName,
-        fileType,
+        fileId,
         page,
         perPage,
+        isBeginning,
+        isFinal,
       },
     });
     return response.data;
@@ -158,14 +158,14 @@ const fetchPaginatedData = async (
   }
 };
 
-export const loadListbyChunks = async (fileName, fileType) => {
+export const loadListbyChunks = async (fileId) => {
   let page = 1;
   let allData = [];
   let data;
   try {
     do {
       try {
-        data = await fetchPaginatedData(fileName, fileType, page);
+        data = await fetchPaginatedData(fileId, page, false );
       } catch (error) {
         console.log(error);
       }
@@ -173,14 +173,16 @@ export const loadListbyChunks = async (fileName, fileType) => {
       allData = allData.concat(data);
       page++;
     } while (data.length > 0 && typeof data != "undefined");
+    await fetchPaginatedData(fileId, page, true);
   } catch (error) {
     console.log(error);
   }
+  console.log("all data", allData);
   return allData;
 };
 
-export const airdrop = (fileName, fileType, tokenMint, wallet, amount) => {
-  const data = { fileName, fileType, tokenMint, wallet, amount };
+export const airdrop = (fileId, tokenMint, wallet, amount) => {
+  const data = { fileId, tokenMint, wallet, amount };
   const response = AxiosInstance.request({
     url: "/airdrop/transfer",
     method: "POST",

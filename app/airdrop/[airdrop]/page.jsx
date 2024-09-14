@@ -33,8 +33,9 @@ import Heading from "@/components/airdrop/Heading";
 import { HelpIcon, RightArrow, RocketIcon, UploadIcon } from "@/components/Assests/icons/Icon";
 import Link from "next/link";
 import WalletToken from "@/components/airdrop/WalletTokens";
-import { fetchWalletTokens, getWalletAssets } from "@/lib/solana";
+import { fetchWalletTokens, fetchUploadedFiles } from "@/lib/solana";
 import { useWallet } from "@solana/wallet-adapter-react";
+import UploadedFile from "@/components/airdrop/UploadedFile";
 
 
 export default function Airdrop() {
@@ -43,8 +44,7 @@ export default function Airdrop() {
   const path = usePathname();
   const { tempWallet, openWalletGenModal } = useModalContext();
   const [list, setList] = useState([]);
-  const [fileName, setFileName] = useState("");
-  const [fileType, setFileType] = useState("");
+  const [fileId, setFileId] = useState("");
   const [amountPerEach, setAmountPerEach] = useState("");
   const [totalAmount, setTotalAmount] = useState("");
   const [address, setAddress] = useState("");
@@ -57,28 +57,30 @@ export default function Airdrop() {
   const inputFile = useRef(null);
   const wallet = useWallet();
   const [walletTokens, setWalletTokens] = useState([]);
+  const [showWalletTokens, setShowWalletTokens] = useState(false);
+  const [isExploring, setIsExploring] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [showUpload, setShowUpload] = useState(false);
 
   useEffect(() => {
     if (!isSigned) return;
     const {
       flag,
-      fileName,
-      fileType,
+      fileId,
       address,
       counts,
       multiplier,
       totalAmount,
     } = getParams(path);
     if (flag == 0) {
-      setFileName(fileName);
-      setFileType(fileType);
       setAddress(address);
       setCounts(counts);
       setMuliplier(multiplier);
       setTotalAmount(totalAmount);
-      getList(fileName, fileType);
+      // setFileId(fileId);
+      getList(fileId);
     }
-  }, [isSigned, fileName, fileType]);
+  }, [isSigned, fileId]);
 
   useEffect(() => {
     if (countAirdrop) {
@@ -103,11 +105,12 @@ export default function Airdrop() {
     }
   }, [counts, multiplier, countAirdrop, totalAmount]);
 
-  const getList = async (fileName, fileType) => {
-    if (fileName == "" || fileType == "") return;
+  const getList = async (fileId) => {
+    if (fileId == "") return;
     setIsLoading(true);
-    const data = await loadListbyChunks(fileName, fileType);
+    const data = await loadListbyChunks(fileId);
     const list = data;
+    console.log(list)
     if (list.length) {
       if (!Object.keys(list[0]).includes("balance")) {
         const properties = Object.keys(list[0]).slice(1);
@@ -128,9 +131,21 @@ export default function Airdrop() {
   };
 
   const getWalletTokens = useCallback(async () => {
+    setShowWalletTokens(true);
+    setIsExploring(true);
     const tokens = await fetchWalletTokens(wallet.publicKey);
-    setWalletTokens(tokens)
-  }, [wallet])
+    setWalletTokens(tokens);
+    setIsExploring(false);
+  }, [wallet, setShowWalletTokens]);
+
+
+  const getUploadedFiles = useCallback(async () => {
+    setShowUpload(true);
+    setIsExploring(true);
+    const files = await fetchUploadedFiles();
+    setUploadedFiles(files);
+    setIsExploring(false);
+  }, [])
 
   /**
    * Upload the file as soon as the user input the file(.json/.csv)
@@ -142,8 +157,7 @@ export default function Airdrop() {
     if (target.files && target.files.length > 0) {
       const file = target.files[0];
       let fileType = file.type;
-      if (!fileType.match("json") && !fileType.match("csv")) return;
-      fileType.match("json") ? (fileType = "json") : (fileType = "csv");
+      if (!fileType.match("csv")) return;
       const chunkSize = 1024 * 1024; // 1MB chunks
       const uploadId = Date.now().toString(); // Unique identifier for the upload session
 
@@ -159,17 +173,15 @@ export default function Airdrop() {
       // Finalize the upload
       try {
         console.log("Final upload")
-        const { success, message, fileName } = await finalizeUpload(
+        const { success, message, fileId } = await finalizeUpload(
           uploadId,
-          fileType
         );
         window.history.replaceState(
           {},
           "",
-          makeURLwithFile(path, fileName, fileType)
+          makeURLwithFile(path, fileId)
         );
-        setFileName(fileName);
-        setFileType(fileType);
+        setFileId(fileId);
       } catch (error) {
         console.log(error);
       }
@@ -236,9 +248,9 @@ export default function Airdrop() {
                     value={address}
                     onChange={handleAddressChange}
                   />
-                  <button className="w-[120px] border-l text-xs bg-primary-foreground/50 rounded-r-md flex gap-2 items-center justify-center" onClick={getWalletTokens}>Explore Wallet<RightArrow /></button>
+                  <button className="w-[120px] hover:cursor-pointer border-l text-xs bg-primary-foreground/50 rounded-r-md flex gap-2 items-center justify-center" disabled={!isSigned} onClick={getWalletTokens}>Explore Wallet<RightArrow /></button>
                 </div>
-                <WalletToken tokens={walletTokens} />
+                {showWalletTokens && <WalletToken tokens={walletTokens} setShowWalletTokens={setShowWalletTokens} isLoading={isExploring} setAddress={setAddress} />}
               </div>
               <div className="space-y-1">
                 <div className="flex gap-2">
@@ -255,10 +267,11 @@ export default function Airdrop() {
                     className="hidden"
                     onChange={onChooseFile}
                   />
-                  <Button className="w-[120px] border-l text-xs bg-primary-foreground/50 rounded-r-md flex gap-2 items-center justify-center" disabled={!isSigned} onClick={() => {
+                  <button className="w-[120px] hover:cursor-pointer border-l text-xs bg-primary-foreground/50 rounded-r-md flex gap-2 items-center justify-center" disabled={!isSigned} onClick={() => {
                     console.log(inputFile.current)
                     inputFile.current.click();
-                  }}>Upload File<UploadIcon /></Button>
+                  }}>Upload File<UploadIcon /></button>
+                  {showUpload && <UploadedFile files={uploadedFiles} setShowUpload={setShowUpload} isLoading={isExploring} setFileName={setFileName} setFileType={setFileType} />}
                 </div>
               </div>
               <div className="space-y-1">
