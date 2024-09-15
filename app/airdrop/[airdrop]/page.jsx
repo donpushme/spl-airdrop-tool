@@ -61,7 +61,7 @@ export default function Airdrop() {
   const [isExploring, setIsExploring] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [showUpload, setShowUpload] = useState(false);
-  const [log, setLog] = useState("");
+  const [log, setLog] = useState("Choose from account");
 
   useEffect(() => {
     if (!isSigned) return;
@@ -84,7 +84,7 @@ export default function Airdrop() {
   }, [isSigned, fileId]);
 
   useEffect(()=>{
-    log = (uploadedFiles.find((file) => file.id == fileId))[0];
+    const log = (uploadedFiles.find((file) => file.id == fileId));
     setLog(JSON.stringify(log));
   },[fileId])
 
@@ -179,15 +179,17 @@ export default function Airdrop() {
       // Finalize the upload
       try {
         console.log("Final upload")
-        const { success, message, fileId } = await finalizeUpload(
+        const { success, message, file } = await finalizeUpload(
           uploadId,
         );
+        console.log(file)
         window.history.replaceState(
           {},
           "",
-          makeURLwithFile(path, fileId)
+          makeURLwithFile(path, file.id)
         );
-        setFileId(fileId);
+        setFileId(file.id);
+        setLog(`${file.token}`);
       } catch (error) {
         console.log(error);
       }
@@ -265,7 +267,7 @@ export default function Airdrop() {
                 </div>
                 <div className="text-disabled text-xs italic">Connect your wallet to get your previous snapshots or upload snapshot file</div>
                 <div className="flex border rounded-md">
-                  <Input className="p-4 border-0 w-[calc(100%-120px)]" placeholder="Choose from account" disabled={!isSigned} value={log}/>
+                  <div className="p-4 border-0 w-[calc(100%-120px)]" onClick={() => {setShowUpload(true)}}>{log}</div>
                   <input
                     ref={inputFile}
                     id="wallet_list"
@@ -278,7 +280,7 @@ export default function Airdrop() {
                     inputFile.current.click();
                   }}>Upload File<UploadIcon /></button>
                 </div>
-                {!showUpload && <UploadedFile files={uploadedFiles} setShowUpload={setShowUpload} isLoading={isExploring} setFileId={setFileId} />}
+                {showUpload && <UploadedFile files={uploadedFiles} setShowUpload={setShowUpload} isLoading={isExploring} setFileId={setFileId} />}
               </div>
               <div className="space-y-1">
                 <div className="flex gap-1 items-center">

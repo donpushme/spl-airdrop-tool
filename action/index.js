@@ -131,7 +131,6 @@ export const getList = async (fileId) => {
 const fetchPaginatedData = async (
   fileId,
   page,
-  isFinal,
 ) => {
   const perPage = 10000;
   const isBeginning = page == 1 ? true : false;
@@ -148,7 +147,6 @@ const fetchPaginatedData = async (
         page,
         perPage,
         isBeginning,
-        isFinal,
       },
     });
     return response.data;
@@ -165,7 +163,7 @@ export const loadListbyChunks = async (fileId) => {
   try {
     do {
       try {
-        data = await fetchPaginatedData(fileId, page, false );
+        data = await fetchPaginatedData(fileId, page );
       } catch (error) {
         console.log(error);
       }
@@ -173,7 +171,6 @@ export const loadListbyChunks = async (fileId) => {
       allData = allData.concat(data);
       page++;
     } while (data.length > 0 && typeof data != "undefined");
-    await fetchPaginatedData(fileId, page, true);
   } catch (error) {
     console.log(error);
   }

@@ -2,7 +2,7 @@ import { GetObjectCommand, PutObjectCommand, S3Client, S3 } from "@aws-sdk/clien
 import dotenv from 'dotenv'
 import fs from "fs";
 import path from 'path';
-import { deleteFile, getProperties, readListFromFile, readStrFromFile } from "./file";
+import { deleteFile, getPropertiesAndValue, readListFromFile, readStrFromFile } from "./file";
 import { Readable } from 'stream';
 import { createWriteStream } from "fs";
 dotenv.config()
@@ -31,9 +31,14 @@ export const upload = async (fileName: string) => {
 
   const data = await readStrFromFile(path.join('uploads', fileName));
   const parsedData = JSON.stringify(data);
-  
-  const properties = await getProperties(path.join('uploads', fileName));
 
+  const { properties, values } = await getPropertiesAndValue(path.join('uploads', fileName));
+  let type = 1;
+  if (!properties.includes('balance') && properties.length > 2) type = 2;
+
+  let symbol;
+  if (properties.includes("symbol")) symbol = values[2];
+  else symbol = properties[1];
   console.log("properties", properties)
 
   const command = new PutObjectCommand({
@@ -45,7 +50,7 @@ export const upload = async (fileName: string) => {
   try {
     const response = await client.send(command);
     deleteFile(path.join('uploads', fileName));
-    return { success: true, symbol: "BONKFA", type: 1 }
+    return { success: true, symbol, type }
   } catch (err) {
     console.error(err);
     return { success: false }
@@ -62,7 +67,7 @@ export const download = async (fileName: string) => {
   try {
     const response = await client.send(command);
     // The Body object also has 'transformToByteArray' and 'transformToWebStream' methods.
-    let str: any = await response.Body?.transformToString(); 
+    let str: any = await response.Body?.transformToString();
     // const arr: any = await response.Body?.transformToByteArray(); console.log(arr)
 
     fs.writeFileSync(path.join('uploads', fileName), JSON.parse(str));

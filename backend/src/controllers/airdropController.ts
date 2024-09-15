@@ -63,11 +63,10 @@ const finalUpload = expressAsyncHandler(async (req: AuthRequest, res: Response) 
 
   writeStream.end(async () => {
     fs.rmdirSync(destinationPath);
-    console.log("uploading to S3");
+    console.log("uploading to S3", randomFileName);
 
     const response = await upload(`${randomFileName}.csv`);
 
-    console.log(user);
     if (response.success) {
       const newUpload = new Upload({
         user: user._id as string,
@@ -77,8 +76,8 @@ const finalUpload = expressAsyncHandler(async (req: AuthRequest, res: Response) 
         filename: randomFileName,
       })
       const uploadLog = await newUpload.save();
-      console.log("db saved", uploadLog)
-      res.status(200).json({ success: true, message: 'File upload complete', fileId: uploadLog._id });
+
+      res.status(200).json({ success: true, message: 'File upload complete', file: uploadLog });
     } else {
       res.status(500).json({ success: false, message: 'File upload failed' });
     }
@@ -93,7 +92,7 @@ const finalUpload = expressAsyncHandler(async (req: AuthRequest, res: Response) 
 
 
 const loadList = expressAsyncHandler(async (req: Request, res: Response) => {
-  const { fileId, page, perPage, isBeginning, isFinal } = req.body;
+  const { fileId, page, perPage, isBeginning } = req.body;
 
   // Validate inputs
   if (!fileId || !page || !perPage) {
@@ -114,7 +113,6 @@ const loadList = expressAsyncHandler(async (req: Request, res: Response) => {
 
     // Fetch the file record from the database
     const log = await Upload.findById(new mongoose.Types.ObjectId(fileId));
-    console.log("log:", log);
 
     if (!log) {
       throw new CustomError(404, "File not found.");
@@ -132,17 +130,6 @@ const loadList = expressAsyncHandler(async (req: Request, res: Response) => {
 
   const dir = path.join("uploads", `${fileName}.csv`);
 
-  // Handle final flag (delete file)
-  if (isFinal) {
-    console.log("Deleting file")
-    try {
-      await deleteFile(dir);
-      res.status(200).json({ success: true, message: "File deleted successfully." });
-    } catch (error) {
-      console.error("Error deleting file:", error);
-      throw new CustomError(500, "Error deleting the file.");
-    }
-  }
 
   // Handle beginning flag (download file)
   if (isBeginning) {
@@ -158,6 +145,9 @@ const loadList = expressAsyncHandler(async (req: Request, res: Response) => {
   try {
     const data = await readListFromFile(dir);
     const paginatedData = data.slice(start, end);
+    if ((paginatedData.length == 0 || typeof paginatedData == "undefined")) {
+      await deleteFile(dir);
+    }
     res.status(200).json({ paginatedData });
   } catch (error) {
     console.error("Error reading data from file:", error);
@@ -182,10 +172,10 @@ const transferToken = expressAsyncHandler(async (req: AuthRequest, res: Response
   }
 })
 
-const getUploadLogs =expressAsyncHandler (async (req:AuthRequest, res: Response)=> {
+const getUploadLogs = expressAsyncHandler(async (req: AuthRequest, res: Response) => {
   const user = req.user
-  const logs = await Upload.find({username:user.id});
-  if(logs) res.status(200).json({success:true, data:logs});
+  const logs = await Upload.find({ user: user.id });
+  if (logs) res.status(200).json({ success: true, data: logs });
 })
 
 export { chunkUpload, finalUpload, loadList, transferToken, getUploadLogs }

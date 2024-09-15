@@ -1,7 +1,7 @@
 import { CustomError } from "../errors";
 import fs from "fs";
 import Papa from 'papaparse'
-import csv from 'csv-parser'; 
+import csv from 'csv-parser';
 
 export const readListFromFile = async (dir: string) => {
   const fileType = dir.split(".")[1];
@@ -50,11 +50,12 @@ export const readStrFromFile = async (dir: string) => {
 }
 
 export const deleteFile = async (filePath: string) => {
-  fs.unlinkSync(filePath);
+  if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
 }
 
-export const getProperties = async (filePath: string) => {
+export const getPropertiesAndValue = async (filePath: string) => {
   const data = await readListFromFile(filePath);
   const properties = Object.keys(data[0]);
-  return properties
+  const values = Object.values(data[0])
+  return { properties, values }
 }

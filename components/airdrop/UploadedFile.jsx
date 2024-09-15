@@ -5,7 +5,7 @@ import Spinner_1 from "../Assests/spinner/Spinner_1";
 import Spinner from "../Assests/spinner/Spinner";
 
 
-export default function UploadedFile({ files, setShowUploadedFile, isLoading, setFileId }) {
+export default function UploadedFile({ files, setShowUpload, isLoading, setFileId }) {
     const newRef = useRef(null); // Typing the ref correctly
     const [fileText, setFileText] = useState("")
 
@@ -23,7 +23,7 @@ export default function UploadedFile({ files, setShowUploadedFile, isLoading, se
     }, []); // Ensure the effect has an empty dependency array to prevent it from running on every render
 
     const closeMenu = () => {
-        setShowUploadedFile(false)
+        setShowUpload(false)
     }
 
     const selectToken = (fileId) => {
