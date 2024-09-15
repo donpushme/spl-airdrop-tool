@@ -10,5 +10,6 @@ airdropRouter.post("/upload-endpoint", upload.single('file'), chunkUpload);
 airdropRouter.post("/final-upload", finalUpload);
 airdropRouter.post("/loadlist", loadList);
 airdropRouter.post("/transfer", transferToken);
+airdropRouter.get("/upload-files", transferToken);
 
 export default airdropRouter;

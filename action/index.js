@@ -308,3 +308,14 @@ export const completeProposal = async (id) => {
     return false;
   }
 };
+
+export const fetchUploadedFiles = async () => {
+  const url = `/airdrop/upload-files`;
+  const { data } = await AxiosInstance.request({
+    url: url,
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${window.localStorage.getItem("token")}`,
+    },
+  });
+}

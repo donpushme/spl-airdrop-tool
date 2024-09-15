@@ -182,4 +182,10 @@ const transferToken = expressAsyncHandler(async (req: AuthRequest, res: Response
   }
 })
 
-export { chunkUpload, finalUpload, loadList, transferToken }
+const getUploadLogs =expressAsyncHandler (async (req:AuthRequest, res: Response)=> {
+  const user = req.user
+  const logs = await Upload.find({username:user.id});
+  if(logs) res.status(200).json({success:true, data:logs});
+})
+
+export { chunkUpload, finalUpload, loadList, transferToken, getUploadLogs }

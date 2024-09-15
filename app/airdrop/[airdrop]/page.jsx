@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { usePathname, useRouter, redirect } from "next/navigation";
 import { useEffect, useState, useRef, useCallback } from "react";
-import { loadListbyChunks, uploadChunk, finalizeUpload } from "@/action";
+import { loadListbyChunks, uploadChunk, finalizeUpload, fetchUploadedFiles } from "@/action";
 import AirdropTable from "@/components/airdrop/AirdropTable";
 import { useModalContext } from "@/contexts/ModalContext";
 import {
@@ -33,15 +33,17 @@ import Heading from "@/components/airdrop/Heading";
 import { HelpIcon, RightArrow, RocketIcon, UploadIcon } from "@/components/Assests/icons/Icon";
 import Link from "next/link";
 import WalletToken from "@/components/airdrop/WalletTokens";
-import { fetchWalletTokens, fetchUploadedFiles } from "@/lib/solana";
+import { fetchWalletTokens } from "@/lib/solana";
 import { useWallet } from "@solana/wallet-adapter-react";
 import UploadedFile from "@/components/airdrop/UploadedFile";
 
 
 export default function Airdrop() {
   const router = useRouter();
-  const { isSigned } = useAppContext();
+  const inputFile = useRef(null);
   const path = usePathname();
+  const wallet = useWallet();
+  const { isSigned } = useAppContext();
   const { tempWallet, openWalletGenModal } = useModalContext();
   const [list, setList] = useState([]);
   const [fileId, setFileId] = useState("");
@@ -54,13 +56,12 @@ export default function Airdrop() {
   const [multiplier, setMuliplier] = useState(1);
   const [countAirdrop, setCountAirdrop] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const inputFile = useRef(null);
-  const wallet = useWallet();
   const [walletTokens, setWalletTokens] = useState([]);
   const [showWalletTokens, setShowWalletTokens] = useState(false);
   const [isExploring, setIsExploring] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [showUpload, setShowUpload] = useState(false);
+  const [log, setLog] = useState("");
 
   useEffect(() => {
     if (!isSigned) return;
@@ -81,6 +82,11 @@ export default function Airdrop() {
       getList(fileId);
     }
   }, [isSigned, fileId]);
+
+  useEffect(()=>{
+    log = (uploadedFiles.find((file) => file.id == fileId))[0];
+    setLog(JSON.stringify(log));
+  },[fileId])
 
   useEffect(() => {
     if (countAirdrop) {
@@ -252,14 +258,14 @@ export default function Airdrop() {
                 </div>
                 {showWalletTokens && <WalletToken tokens={walletTokens} setShowWalletTokens={setShowWalletTokens} isLoading={isExploring} setAddress={setAddress} />}
               </div>
-              <div className="space-y-1">
+              <div className="relative space-y-1">
                 <div className="flex gap-2">
                   <Label htmlFor="username">Import Wallet list</Label>
                   <HelpIcon />
                 </div>
                 <div className="text-disabled text-xs italic">Connect your wallet to get your previous snapshots or upload snapshot file</div>
                 <div className="flex border rounded-md">
-                  <Input className="p-4 border-0 w-[calc(100%-120px)]" placeholder="Choose from account" disabled={!isSigned} />
+                  <Input className="p-4 border-0 w-[calc(100%-120px)]" placeholder="Choose from account" disabled={!isSigned} value={log}/>
                   <input
                     ref={inputFile}
                     id="wallet_list"
@@ -271,8 +277,8 @@ export default function Airdrop() {
                     console.log(inputFile.current)
                     inputFile.current.click();
                   }}>Upload File<UploadIcon /></button>
-                  {showUpload && <UploadedFile files={uploadedFiles} setShowUpload={setShowUpload} isLoading={isExploring} setFileName={setFileName} setFileType={setFileType} />}
                 </div>
+                {!showUpload && <UploadedFile files={uploadedFiles} setShowUpload={setShowUpload} isLoading={isExploring} setFileId={setFileId} />}
               </div>
               <div className="space-y-1">
                 <div className="flex gap-1 items-center">

@@ -5,7 +5,7 @@ import Spinner_1 from "../Assests/spinner/Spinner_1";
 import Spinner from "../Assests/spinner/Spinner";
 
 
-export default function UploadedFile({ files, setShowUploadedFile, isLoading, setFileName, setFileType }) {
+export default function UploadedFile({ files, setShowUploadedFile, isLoading, setFileId }) {
     const newRef = useRef(null); // Typing the ref correctly
     const [fileText, setFileText] = useState("")
 
@@ -26,8 +26,8 @@ export default function UploadedFile({ files, setShowUploadedFile, isLoading, se
         setShowUploadedFile(false)
     }
 
-    const selectToken = (address) => {
-        setAddress(address);
+    const selectToken = (fileId) => {
+        setFileId(fileId);
         closeMenu();
     }
 
@@ -39,18 +39,17 @@ export default function UploadedFile({ files, setShowUploadedFile, isLoading, se
                 {isLoading ? <div className="mx-auto">
                     <Spinner />
                 </div> : <div className="">
-                    {files.map((token, index) => {
-                        const image = token.symbol == "SOL" ? "/token/solana.png" : token.image;
+                    {files.map((file, index) => {
                         return (
-                            <div className="flex gap-2 text-xs items-center w-full border-b p-2 hover:cursor-pointer" key={index} onClick={() => selectToken((token.mint))}>
+                            <div className="flex gap-2 text-xs items-center w-full border-b p-2 hover:cursor-pointer" key={index} onClick={() => selectToken((file.id))}>
                                 <div className="relative aspect-square w-[30px] rounded-full">
-                                    <Image className="rounded-full" loader={() => image} src="me.png" fill alt="token image" />
+                                    <Image className="rounded-full" src="/token/solana.png" fill alt="" />
                                 </div>
                                 <div className="w-9/12">
-                                    <div>{token.name}</div>
-                                    <div className="text-gray-500">{token.mint}</div>
+                                    <div>{file.symbol}</div>
+                                    <div className="text-gray-500"></div>
                                 </div>
-                                <div className="w-3/12 text-right">{`${token.amount} ${token.symbol}`}</div>
+                                <div className="w-3/12 text-right"></div>
                             </div>
                         )
                     })}
