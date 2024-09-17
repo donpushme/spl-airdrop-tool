@@ -79,7 +79,8 @@ export default function Airdrop() {
 
   useEffect(() => {
     const log = (uploadedFiles.find((file) => file._id == fileId));
-    if (fileId) {
+    console.log(log)
+    if (fileId && typeof fileId != "undefined") {
       const type = log.type == 1 ? "single" : "combined";
       setLog(`${log.token} (${type})`);
     }
@@ -184,9 +185,9 @@ export default function Airdrop() {
         window.history.replaceState(
           {},
           "",
-          makeURLwithFile(path, file.id)
+          makeURLwithFile(path, file._id)
         );
-        setFileId(file.id);
+        setFileId(file._id);
       } catch (error) {
         console.log(error);
       }
