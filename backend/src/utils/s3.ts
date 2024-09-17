@@ -41,6 +41,8 @@ export const upload = async (fileName: string) => {
   else symbol = properties[1];
   console.log("properties", properties)
 
+  const length = values.length;
+
   const command = new PutObjectCommand({
     Bucket: Bucket,
     Key: fileName,
@@ -50,7 +52,7 @@ export const upload = async (fileName: string) => {
   try {
     const response = await client.send(command);
     deleteFile(path.join('uploads', fileName));
-    return { success: true, symbol, type }
+    return { success: true, symbol, type, length }
   } catch (err) {
     console.error(err);
     return { success: false }

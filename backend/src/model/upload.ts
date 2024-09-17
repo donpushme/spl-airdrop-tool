@@ -7,7 +7,8 @@ export interface IUpload extends Document {
   token?: string,
   type?: number,
   filename?: string,
-  date?: Date
+  date?: Date,
+  length?:number
 }
 
 // Create the schema for the NFTSwap model
@@ -17,6 +18,7 @@ const UploadSchema: Schema = new Schema({
   token: {type: String, required: true},
   type: {type: Number, required:true},
   filename: {type: String, required:true},
+  length: {type: Number, required:true},
   date: { type: Date, required: true, default: Date.now }
 });
 

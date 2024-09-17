@@ -74,6 +74,7 @@ const finalUpload = expressAsyncHandler(async (req: AuthRequest, res: Response) 
         token: response.symbol,
         type: response.type,
         filename: randomFileName,
+        length: response.length
       })
       const uploadLog = await newUpload.save();
 
@@ -175,7 +176,7 @@ const transferToken = expressAsyncHandler(async (req: AuthRequest, res: Response
 const getUploadLogs = expressAsyncHandler(async (req: AuthRequest, res: Response) => {
   const user = req.user
   const logs = await Upload.find({ user: user.id });
-  if (logs) res.status(200).json({ success: true, data: logs });
+  res.status(200).json({ success: true, data: logs });
 })
 
 export { chunkUpload, finalUpload, loadList, transferToken, getUploadLogs }
