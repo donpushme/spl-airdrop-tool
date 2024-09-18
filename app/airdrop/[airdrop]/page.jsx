@@ -55,7 +55,7 @@ export default function Airdrop() {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [showUpload, setShowUpload] = useState(false);
   const [log, setLog] = useState("Choose from account");
-  const [steps, setSteps]=  useState([false, false, false])
+  const [steps, setSteps] = useState([false, false, false])
 
   useEffect(() => {
     if (!isSigned) return;
@@ -80,7 +80,7 @@ export default function Airdrop() {
   useEffect(() => {
     const log = (uploadedFiles.find((file) => file._id == fileId));
     console.log(log)
-    if (fileId && typeof fileId != "undefined") {
+    if (log && typeof log != "undefined") {
       const type = log.type == 1 ? "single" : "combined";
       setLog(`${log.token} (${type})`);
     }
@@ -181,13 +181,14 @@ export default function Airdrop() {
         const { success, message, file } = await finalizeUpload(
           uploadId,
         );
-        console.log(file)
         window.history.replaceState(
           {},
           "",
           makeURLwithFile(path, file._id)
         );
         setFileId(file._id);
+        const type = file.type == 1 ? "single" : "combined";
+        setLog(`${file.token} (${type})`);
       } catch (error) {
         console.log(error);
       }
@@ -374,7 +375,7 @@ export default function Airdrop() {
         </div>
       </div>
       {isLoading && <Loading />}
-      {steps[0] == false && <Description/>}
+      {steps[0] == false && <Description />}
       <AirdropTable list={list} />
     </div>
   );
