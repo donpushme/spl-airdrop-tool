@@ -430,3 +430,61 @@ export const UploadIcon = () => (
     <path d="M0.666656 6.99996C0.666656 4.0144 0.666656 2.52162 1.59415 1.59412C2.52165 0.666626 4.01443 0.666626 6.99999 0.666626C9.98555 0.666626 11.4783 0.666626 12.4058 1.59412C13.3333 2.52162 13.3333 4.0144 13.3333 6.99996C13.3333 9.98552 13.3333 11.4783 12.4058 12.4058C11.4783 13.3333 9.98555 13.3333 6.99999 13.3333C4.01443 13.3333 2.52165 13.3333 1.59415 12.4058C0.666656 11.4783 0.666656 9.98552 0.666656 6.99996Z" stroke="white" />
   </svg>
 )
+
+export const DatabaseIcon = () => (
+  <svg width="39" height="39" viewBox="0 0 39 39" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="39" height="39" rx="19.5" fill="url(#paint0_linear_1_128)" fillOpacity="0.5" />
+    <path d="M19 16C23.4183 16 27 14.6569 27 13C27 11.3431 23.4183 10 19 10C14.5817 10 11 11.3431 11 13C11 14.6569 14.5817 16 19 16Z" stroke="white" strokeWidth="1.5" />
+    <path d="M14 18.8418C14.6016 19.0226 15.2743 19.1716 16 19.2817" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M19 23C14.5817 23 11 21.6569 11 20" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M14 25.8418C14.6016 26.0226 15.2743 26.1716 16 26.2817" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M19 30C14.5817 30 11 28.6569 11 27V13M27 13V20" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M27 27.3265L25.8258 28.8131C25.2008 29.6044 24.8883 30 24.5 30C24.1117 30 23.7992 29.6044 23.1742 28.8131L22 27.3265M24.5 29.9128V22" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <defs>
+      <linearGradient id="paint0_linear_1_128" x1="19.5" y1="0" x2="19.5" y2="39" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#35F5E9" />
+        <stop offset="1" stopColor="#075E3B" />
+      </linearGradient>
+    </defs>
+  </svg>
+)
+
+export const GearIcon = () => (
+  <svg width="39" height="39" viewBox="0 0 39 39" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="39" height="39" rx="19.5" fill="url(#paint0_linear_1_128)" fillOpacity="0.5" />
+    <path d="M19 16C23.4183 16 27 14.6569 27 13C27 11.3431 23.4183 10 19 10C14.5817 10 11 11.3431 11 13C11 14.6569 14.5817 16 19 16Z" stroke="white" strokeWidth="1.5" />
+    <path d="M14 18.8418C14.6016 19.0226 15.2743 19.1716 16 19.2817" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M19 23C14.5817 23 11 21.6569 11 20" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M14 25.8418C14.6016 26.0226 15.2743 26.1716 16 26.2817" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M19 30C14.5817 30 11 28.6569 11 27V13M27 13V20" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M27 27.3265L25.8258 28.8131C25.2008 29.6044 24.8883 30 24.5 30C24.1117 30 23.7992 29.6044 23.1742 28.8131L22 27.3265M24.5 29.9128V22" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <defs>
+      <linearGradient id="paint0_linear_1_128" x1="19.5" y1="0" x2="19.5" y2="39" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#35F5E9" />
+        <stop offset="1" stopColor="#075E3B" />
+      </linearGradient>
+    </defs>
+  </svg>
+)
+export const ProtectShieldIcon = () => (
+  <svg width="39" height="39" viewBox="0 0 39 39" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="39" height="39" rx="19.5" fill="url(#paint0_linear_1_149)" fillOpacity="0.5" />
+    <path d="M16 21C16 21 17 21 18 23C18 23 21.1765 18 24 17" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M28 19.1833V16.2803C28 14.6403 28 13.8203 27.5959 13.2853C27.1918 12.7503 26.2781 12.4906 24.4507 11.9711C23.2022 11.6162 22.1016 11.1886 21.2223 10.7983C20.0234 10.2661 19.424 10 19 10C18.576 10 17.9766 10.2661 16.7777 10.7983C15.8984 11.1886 14.7978 11.6162 13.5493 11.9711C11.7219 12.4906 10.8082 12.7503 10.4041 13.2853C10 13.8203 10 14.6403 10 16.2803V19.1833C10 24.8085 15.0628 28.1835 17.594 29.5194C18.2011 29.8398 18.5046 30 19 30C19.4954 30 19.7989 29.8398 20.406 29.5194C22.9372 28.1835 28 24.8085 28 19.1833Z" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+    <defs>
+      <linearGradient id="paint0_linear_1_149" x1="19.5" y1="0" x2="19.5" y2="39" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#35F5E9" />
+        <stop offset="1" stopColor="#075E3B" />
+      </linearGradient>
+    </defs>
+  </svg>
+)
+
+export const FileRecordIcon = () => (
+  <svg width="37" height="38" viewBox="0 0 37 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect y="0.5" width="37" height="37" rx="18.5" fill="#313131" />
+    <path d="M16.3819 12.0051C17.5901 10.6684 18.1943 10 19 10C19.8057 10 20.4099 10.6684 21.6181 12.0051L24.5897 15.2925C26.1966 17.0702 27 17.9591 27 19C27 20.0409 26.1966 20.9298 24.5897 22.7075L21.6181 25.9949C20.4099 27.3316 19.8057 28 19 28C18.1943 28 17.5901 27.3316 16.3819 25.9949L13.4103 22.7075C11.8034 20.9298 11 20.0409 11 19C11 17.9591 11.8034 17.0702 13.4103 15.2925L16.3819 12.0051Z" stroke="white" strokeWidth="1.5" />
+    <circle cx="19" cy="19" r="3" fill="white" />
+  </svg>
+
+) 

@@ -163,7 +163,7 @@ export const loadListbyChunks = async (fileId) => {
   try {
     do {
       try {
-        data = await fetchPaginatedData(fileId, page );
+        data = await fetchPaginatedData(fileId, page);
       } catch (error) {
         console.log(error);
       }
@@ -308,11 +308,20 @@ export const completeProposal = async (id) => {
 
 export const fetchUploadedFiles = async () => {
   const url = `/airdrop/upload-files`;
-  const { data } = await AxiosInstance.request({
-    url: url,
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${window.localStorage.getItem("token")}`,
-    },
-  });
+  try {
+    const { data } = await AxiosInstance.request({
+      url: url,
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${window.localStorage.getItem("token")}`,
+      },
+    });
+
+    console.log(data)
+
+    if (data.success && data.data.length) return data.data;
+    else return []
+  } catch (error) {
+    console.log(error)
+  }
 }

@@ -33,17 +33,16 @@ export default function WalletToken({ tokens, setShowWalletTokens, isLoading, se
     // const { tokens, loading, error } = useWalletTokens();
     console.log(tokens)
     return (
-        <div className="absolute top-full bg-background w-[calc(100%-120px)] border rounded-sm p-2" ref={newRef}>
+        <div className="absolute top-full bg-background w-[calc(100%-120px)] border rounded-sm p-2 z-50" ref={newRef}>
             <div className="scrollbar max-h-[200px] p-2">
                 {isLoading ? <div className="mx-auto">
                     <Spinner />
                 </div> : <div className="">
                     {tokens.map((token, index) => {
-                        const image = token.symbol == "SOL" ? "/token/solana.png" : token.image;
                         return (
-                            <div className="flex gap-2 text-xs items-center w-full border-b p-2 hover:cursor-pointer" key={index} onClick={() => selectToken((token.mint))}>
+                            <div className="flex gap-2 text-xs items-center w-full border-b p-2 hover:cursor-pointer hover:bg-primary/10" key={index} onClick={() => selectToken((token.mint))}>
                                 <div className="relative aspect-square w-[30px] rounded-full">
-                                    <Image className="rounded-full" loader={() => image} src="me.png" fill alt="token image" />
+                                    <Image className="rounded-full" loader={() => token.image} src="me.png" fill alt="token image" />
                                 </div>
                                 <div className="w-9/12">
                                     <div>{token.name}</div>

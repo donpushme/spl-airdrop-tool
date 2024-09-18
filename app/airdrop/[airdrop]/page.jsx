@@ -1,14 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { usePathname, useRouter, redirect } from "next/navigation";
@@ -36,6 +28,7 @@ import WalletToken from "@/components/airdrop/WalletTokens";
 import { fetchWalletTokens } from "@/lib/solana";
 import { useWallet } from "@solana/wallet-adapter-react";
 import UploadedFile from "@/components/airdrop/UploadedFile";
+import Description from "@/components/airdrop/AirdropDescription";
 
 
 export default function Airdrop() {
@@ -62,6 +55,7 @@ export default function Airdrop() {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [showUpload, setShowUpload] = useState(false);
   const [log, setLog] = useState("Choose from account");
+  const [steps, setSteps]=  useState([false, false, false])
 
   useEffect(() => {
     if (!isSigned) return;
@@ -83,10 +77,13 @@ export default function Airdrop() {
     }
   }, [isSigned, fileId]);
 
-  useEffect(()=>{
-    const log = (uploadedFiles.find((file) => file.id == fileId));
-    setLog(JSON.stringify(log));
-  },[fileId])
+  useEffect(() => {
+    const log = (uploadedFiles.find((file) => file._id == fileId));
+    if (fileId) {
+      const type = log.type == 1 ? "single" : "combined";
+      setLog(`${log.token} (${type})`);
+    }
+  }, [fileId])
 
   useEffect(() => {
     if (countAirdrop) {
@@ -149,6 +146,7 @@ export default function Airdrop() {
     setShowUpload(true);
     setIsExploring(true);
     const files = await fetchUploadedFiles();
+    console.log(files)
     setUploadedFiles(files);
     setIsExploring(false);
   }, [])
@@ -189,7 +187,6 @@ export default function Airdrop() {
           makeURLwithFile(path, file.id)
         );
         setFileId(file.id);
-        setLog(`${file.token}`);
       } catch (error) {
         console.log(error);
       }
@@ -237,8 +234,8 @@ export default function Airdrop() {
 
   return (
     <div>
-      <div defaultValue="default" className="w-[900px]">
-        <Heading steps={[true, false, false]} />
+      <div defaultValue="default" className="w-[900px] mx-auto">
+        <Heading steps={steps} />
         <div value="default">
           <div className="p-8 border rounded-xl">
             <div className="space-y-6">
@@ -267,7 +264,7 @@ export default function Airdrop() {
                 </div>
                 <div className="text-disabled text-xs italic">Connect your wallet to get your previous snapshots or upload snapshot file</div>
                 <div className="flex border rounded-md">
-                  <div className="p-4 border-0 w-[calc(100%-120px)]" onClick={() => {setShowUpload(true)}}>{log}</div>
+                  <div className="p-4 border-0 w-[calc(100%-120px)] text-sm" onClick={getUploadedFiles}>{log}</div>
                   <input
                     ref={inputFile}
                     id="wallet_list"
@@ -363,7 +360,7 @@ export default function Airdrop() {
                 </div>
               </div>
             </div>
-            <CardFooter>
+            <div>
               {tempWallet.length == 0 ? (
                 <Button onClick={generateWallet}>
                   Generate temporay wallet
@@ -371,11 +368,12 @@ export default function Airdrop() {
               ) : (
                 <Button onClick={handleAirdrop}>Airdrop</Button>
               )}
-            </CardFooter>
+            </div>
           </div>
         </div>
       </div>
       {isLoading && <Loading />}
+      {steps[0] == false && <Description/>}
       <AirdropTable list={list} />
     </div>
   );
