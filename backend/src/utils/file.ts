@@ -56,6 +56,7 @@ export const deleteFile = async (filePath: string) => {
 export const getPropertiesAndValue = async (filePath: string) => {
   const data = await readListFromFile(filePath);
   const properties = Object.keys(data[0]);
-  const values = Object.values(data[0])
-  return { properties, values }
+  const values = Object.values(data[0]);
+  const length = data.length;
+  return { properties, values, length }
 }

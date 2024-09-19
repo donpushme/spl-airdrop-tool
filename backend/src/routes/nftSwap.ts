@@ -12,5 +12,4 @@ nftSwapRouter.post("/confirm", getConfirm);
 nftSwapRouter.delete("/:id", deleteProposal);
 nftSwapRouter.patch("/:id", completeProposal);
 
-
 export default nftSwapRouter

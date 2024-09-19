@@ -156,8 +156,6 @@ const loadList = expressAsyncHandler(async (req: Request, res: Response) => {
   }
 });
 
-export default loadList;
-
 
 const transferToken = expressAsyncHandler(async (req: AuthRequest, res: Response) => {
   const user = req.user

@@ -487,4 +487,18 @@ export const FileRecordIcon = () => (
     <circle cx="19" cy="19" r="3" fill="white" />
   </svg>
 
-) 
+)
+
+export const NextArrow = () => (
+  <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M5.88889 9L8.76125 5.30697C8.90168 5.12642 8.90168 4.87358 8.76125 4.69303L5.88889 1M1 1L3.87236 4.69303C4.01279 4.87358 4.01279 5.12642 3.87236 5.30697L1 9" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+
+)
+
+export const BackArrow = () => (
+  <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M9 9L6.27118 5.2966C6.14122 5.12022 6.14122 4.87978 6.27118 4.7034L9 1M4.36842 1L1.27121 4.67793C1.11449 4.86404 1.11449 5.13596 1.27122 5.32207L4.36842 9" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+
+)

@@ -32,7 +32,7 @@ export const upload = async (fileName: string) => {
   const data = await readStrFromFile(path.join('uploads', fileName));
   const parsedData = JSON.stringify(data);
 
-  const { properties, values } = await getPropertiesAndValue(path.join('uploads', fileName));
+  const { properties, values, length } = await getPropertiesAndValue(path.join('uploads', fileName));
   let type = 1;
   if (!properties.includes('balance') && properties.length > 2) type = 2;
 
@@ -40,8 +40,6 @@ export const upload = async (fileName: string) => {
   if (properties.includes("symbol")) symbol = values[2];
   else symbol = properties[1];
   console.log("properties", properties)
-
-  const length = values.length;
 
   const command = new PutObjectCommand({
     Bucket: Bucket,

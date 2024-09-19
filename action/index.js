@@ -317,8 +317,6 @@ export const fetchUploadedFiles = async () => {
       },
     });
 
-    console.log(data)
-
     if (data.success && data.data.length) return data.data;
     else return []
   } catch (error) {
