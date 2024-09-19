@@ -307,17 +307,16 @@ export const completeProposal = async (id) => {
 };
 
 export const fetchFile = async (fileId) => {
-  const url = `/airdrop/file/@{l}`
+  const url = `/airdrop/file/${fileId}`
   try {
-    const { data } = await AxiosInstance.request({
+    const {data} = await AxiosInstance.request({
       url: url,
       method: "GET",
       headers: {
         Authorization: `Bearer ${window.localStorage.getItem("token")}`,
       },
     });
-
-    if (data.success ) return data.data;
+    if (data.success) return data.file;
     else return {}
   } catch (error) {
     console.log(error)
