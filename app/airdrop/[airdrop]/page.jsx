@@ -54,7 +54,7 @@ export default function Airdrop() {
   const [isExploring, setIsExploring] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [showUpload, setShowUpload] = useState(false);
-  const [log, setFile] = useState("Choose from account");
+  const [file, setFile] = useState({});
   const [steps, setSteps] = useState([false, false, false])
 
   useEffect(() => {
@@ -76,14 +76,6 @@ export default function Airdrop() {
       getList(fileId);
     }
   }, [isSigned, fileId]);
-
-  useEffect(() => {
-    const file = (uploadedFiles.find((file) => file._id == fileId));
-    if (file && typeof file != "undefined") {
-      const type = file.type == 1 ? "single" : "combined";
-      setFile(file);
-    }
-  }, [fileId])
 
   useEffect(() => {
     if (countAirdrop) {
@@ -193,6 +185,16 @@ export default function Airdrop() {
     }
   };
 
+  const changeFile = (file) => {
+    setFileId(file._id);
+    window.history.replaceState(
+      {},
+      "",
+      makeURLwithFile(path, file._id)
+    );
+    setFile(file);
+  }
+
   const nextStep = useCallback(() => {
     const nextId = steps.indexOf(false);
     let temp = steps.with(nextId, true);
@@ -248,9 +250,9 @@ export default function Airdrop() {
 
   return (
     <div>
-      <div defaultValue="default" className="w-[900px] mx-auto">
+      <div className="w-[900px] mx-auto">
         <Heading steps={steps} />
-        <div value="default">
+        <div>
           <div className="p-8 border rounded-xl">
             <div className="space-y-6">
               {/* Step 1 */}
@@ -280,7 +282,7 @@ export default function Airdrop() {
                   </div>
                   <div className="text-disabled text-xs italic mb-1">Connect your wallet to get your previous snapshots or upload snapshot file</div>
                   <div className="flex border rounded-md">
-                    <div className="p-4 border-0 w-[calc(100%-120px)] text-sm" onClick={getUploadedFiles}>{log}</div>
+                    <div className="p-4 border-0 w-[calc(100%-120px)] text-sm" onClick={getUploadedFiles}>{Object.keys(file).length != 0 ? `${file.token} ${file.type == 1 ? "(single)" : "(combined)"}` : "Choose from account"}</div>
                     <input
                       ref={inputFile}
                       id="wallet_list"
@@ -293,28 +295,32 @@ export default function Airdrop() {
                       inputFile.current.click();
                     }}>Upload File<UploadIcon /></button>
                   </div>
-                  {showUpload && <UploadedFile files={uploadedFiles} setShowUpload={setShowUpload} isLoading={isExploring} setFileId={setFileId} />}
+                  {showUpload && <UploadedFile files={uploadedFiles} setShowUpload={setShowUpload} isLoading={isExploring} changeFile={changeFile} />}
                 </div>
               </div>}
-              {/* Step2 */}
+              {/* Step 2 */}
               {steps[0] && !steps[1] && <div>
-                <div className="flex justify-between gap-2 flex-col md:flex-row">
+                <div>
                   <div className="space-y-1">
                     <Label htmlFor="amount_per_each">
-                      Amount per {countAirdrop ? "count" : "wallet"}
+                      Amount per {countAirdrop ? "NFT" : "wallet"}
                     </Label>
                     <Input
                       id="amount_per_each"
+                      className="p-4"
                       type="text"
+                      placeholder={`Input the amout of the tokens per ${file.isNft ? "NFT" : "wallet"}`}
                       value={amountPerEach}
                       onChange={handleAmountPerEachChange}
                     />
                   </div>
-                  <div className="space-y-1">
+                  <div className="mt-4 space-y-1">
                     <Label htmlFor="totoal_amount">Total Amount</Label>
                     <Input
                       id="totoal_amount"
+                      className="p-4"
                       type="text"
+                      placeholder="Inpute the total amount to be distributed"
                       value={totalAmount}
                       onChange={handleTotalAmountChange}
                     />
@@ -322,7 +328,7 @@ export default function Airdrop() {
                 </div>
               </div>}
               <div className="space-y-1">
-                  <hr className="mb-8" />
+                <hr className="mb-8" />
                 {!steps[0] && <div className="flex gap-1 items-center">
                   <Label>Dont't have snapshot list?</Label>
                   <Link href="/snapshot/ft" className="text-green text-sm">Click here</Link>

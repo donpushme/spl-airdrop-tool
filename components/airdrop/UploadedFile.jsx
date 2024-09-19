@@ -5,7 +5,7 @@ import Spinner from "../Assests/spinner/Spinner";
 import { FileRecordIcon, SortIcon } from "../Assests/icons/Icon";
 import { sortList } from "@/lib/utils";
 
-export default function UploadedFile({ files, setShowUpload, isLoading, setFileId }) {
+export default function UploadedFile({ files, setShowUpload, isLoading, changeFile }) {
     const newRef = useRef(null); // Typing the ref correctly
     const [filteredFiles, setFilteredFiles] = useState(files);
     const [filterValue, setFilterValue] = useState("");
@@ -38,8 +38,8 @@ export default function UploadedFile({ files, setShowUpload, isLoading, setFileI
         if (e.key == "Enter") filter()
     }
 
-    const selectToken = (fileId) => {
-        setFileId(fileId);
+    const selectToken = (file) => {
+        changeFile(file)
         closeMenu();
     }
 
@@ -68,7 +68,7 @@ export default function UploadedFile({ files, setShowUpload, isLoading, setFileI
                         const type = file.type == 1 ? "single" : "combined";
                         const date = new Date(file?.date);
                         return (
-                            <div className="flex gap-4 text-xs items-center w-full border-b p-2 hover:cursor-pointer hover:bg-primary/10" key={index} onClick={() => selectToken((file._id))}>
+                            <div className="flex gap-4 text-xs items-center w-full border-b p-2 hover:cursor-pointer hover:bg-primary/10" key={index} onClick={() => selectToken(file)}>
                                 <div className="relative aspect-square w-[30px] rounded-full">
                                     <FileRecordIcon size={10} />
                                 </div>

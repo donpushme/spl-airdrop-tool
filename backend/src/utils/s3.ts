@@ -36,10 +36,12 @@ export const upload = async (fileName: string) => {
   let type = 1;
   if (!properties.includes('balance') && properties.length > 2) type = 2;
 
+  let isNft = true;
+  if(properties.includes("balance")) isNft = false
+
   let symbol;
   if (properties.includes("symbol")) symbol = values[2];
   else symbol = properties[1];
-  console.log("properties", properties)
 
   const command = new PutObjectCommand({
     Bucket: Bucket,
@@ -50,7 +52,7 @@ export const upload = async (fileName: string) => {
   try {
     const response = await client.send(command);
     deleteFile(path.join('uploads', fileName));
-    return { success: true, symbol, type, length }
+    return { success: true, symbol, type, length, isNft }
   } catch (err) {
     console.error(err);
     return { success: false }

@@ -28,7 +28,7 @@ export const authMiddleware = async (
             throw new UnAuthenticatedError("Authentication Failed");
         }
 
-        const isValid = await verifySignature(walletAddress, user.nonce, signature);
+        const isValid = verifySignature(walletAddress, user.nonce, signature);
         if (!isValid) throw new UnAuthenticatedError("Invalid token");
 
         req.user = user;

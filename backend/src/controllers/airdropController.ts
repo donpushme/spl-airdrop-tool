@@ -74,7 +74,8 @@ const finalUpload = expressAsyncHandler(async (req: AuthRequest, res: Response) 
         token: response.symbol,
         type: response.type,
         filename: randomFileName,
-        length: response.length
+        length: response.length,
+        isNft: response.isNft
       })
       const uploadLog = await newUpload.save();
 
