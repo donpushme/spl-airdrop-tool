@@ -3,9 +3,9 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { usePathname, useRouter, redirect } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useRef, useCallback } from "react";
-import { loadListbyChunks, uploadChunk, finalizeUpload, fetchUploadedFiles } from "@/action";
+import { loadListbyChunks, uploadChunk, finalizeUpload, fetchUploadedFiles, fetchFile } from "@/action";
 import AirdropTable from "@/components/airdrop/AirdropTable";
 import { useModalContext } from "@/contexts/ModalContext";
 import {
@@ -29,11 +29,13 @@ import { fetchWalletTokens, isValidSolanaAddress } from "@/lib/solana";
 import { useWallet } from "@solana/wallet-adapter-react";
 import UploadedFile from "@/components/airdrop/UploadedFile";
 import Description from "@/components/airdrop/AirdropDescription";
-
+import { useAlertContext } from "@/contexts/AlertContext";
+import { SuccessAlert, ErrorAlert } from "@/lib/alerts";
 
 export default function Airdrop() {
   const router = useRouter();
   const inputFile = useRef(null);
+  const { setAlert } = useAlertContext()
   const path = usePathname();
   const wallet = useWallet();
   const { isSigned } = useAppContext();
@@ -74,6 +76,7 @@ export default function Airdrop() {
       setTotalAmount(totalAmount);
       setFileId(fileId);
       getList(fileId);
+      getFile(fileId);
     }
   }, [isSigned, fileId]);
 
@@ -125,6 +128,11 @@ export default function Airdrop() {
     window.history.replaceState({}, "", removeCountsfromUrl(path));
   };
 
+  const getFile = async (fileId) => {
+    const file = await fetchFile(fileId);
+    setFile(file);
+  }
+
   const getWalletTokens = useCallback(async () => {
     setShowWalletTokens(true);
     setIsExploring(true);
@@ -135,12 +143,17 @@ export default function Airdrop() {
 
 
   const getUploadedFiles = useCallback(async () => {
+    console.log(isSigned)
+    if (!isSigned) {
+      setAlert({ ...ErrorAlert, text: "Login first by connecting wallet" })
+      return
+    }
     setShowUpload(true);
     setIsExploring(true);
     const files = await fetchUploadedFiles();
     setUploadedFiles(files);
     setIsExploring(false);
-  }, [])
+  }, [isSigned])
 
   /**
    * Upload the file as soon as the user input the file(.json/.csv)
@@ -196,10 +209,16 @@ export default function Airdrop() {
   }
 
   const nextStep = useCallback(() => {
+    if (steps[0] == false && (!isValidSolanaAddress(address) || fileId == "" || typeof fileId == "undefined")) {
+      console.log("steps", steps)
+      console.log(address, fileId)
+      setAlert({ ...ErrorAlert, text: "Please input correct address and file" })
+      return
+    }
     const nextId = steps.indexOf(false);
     let temp = steps.with(nextId, true);
     setSteps(temp)
-  }, [steps])
+  }, [steps, address, fileId])
 
   const backStep = useCallback(() => {
     let nextId = steps.indexOf(false);
@@ -225,11 +244,17 @@ export default function Airdrop() {
   const handleAddressChange = (e) => {
     const value = e.target.value;
     setAddress(value);
-    console.log(isValidSolanaAddress(value))
     if (isValidSolanaAddress(value) || value == "") {
       window.history.replaceState({}, "", makeURLwithAddress(path, value));
     }
   };
+
+  const changeAddress = (address) => {
+    setAddress(address);
+    if (isValidSolanaAddress(address) || address == "") {
+      window.history.replaceState({}, "", makeURLwithAddress(path, address));
+    }
+  }
 
   const generateWallet = () => {
     openWalletGenModal();
@@ -273,7 +298,7 @@ export default function Airdrop() {
                     />
                     <button className="w-[120px] hover:cursor-pointer border-l text-xs bg-primary-foreground/50 rounded-r-md flex gap-2 items-center justify-center" disabled={!isSigned} onClick={getWalletTokens}>Explore Wallet<RightArrow /></button>
                   </div>
-                  {showWalletTokens && <WalletToken tokens={walletTokens} setShowWalletTokens={setShowWalletTokens} isLoading={isExploring} setAddress={setAddress} />}
+                  {showWalletTokens && <WalletToken tokens={walletTokens} setShowWalletTokens={setShowWalletTokens} isLoading={isExploring} setAddress={changeAddress} />}
                 </div>
                 <div className="my-4 relative">
                   <div className="flex gap-2">
@@ -405,8 +430,8 @@ export default function Airdrop() {
         </div>
       </div>
       {isLoading && <Loading />}
-      {steps[0] == false && <Description />}
-      <AirdropTable list={list} />
+      {steps[0] == false ? <Description /> : <AirdropTable list={list} />}
+
     </div>
   );
 }

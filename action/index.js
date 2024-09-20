@@ -306,6 +306,26 @@ export const completeProposal = async (id) => {
   }
 };
 
+export const fetchFile = async (fileId) => {
+  const url = `/airdrop/file/@{l}`
+  try {
+    const { data } = await AxiosInstance.request({
+      url: url,
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${window.localStorage.getItem("token")}`,
+      },
+    });
+
+    if (data.success ) return data.data;
+    else return {}
+  } catch (error) {
+    console.log(error)
+    return {}
+  }
+}
+
+
 export const fetchUploadedFiles = async () => {
   const url = `/airdrop/upload-files`;
   try {

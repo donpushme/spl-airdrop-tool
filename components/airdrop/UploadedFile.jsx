@@ -52,14 +52,14 @@ export default function UploadedFile({ files, setShowUpload, isLoading, changeFi
 
     return (
         <div className="absolute top-full bg-background w-[calc(100%-120px)] border rounded-sm p-2 z-50" ref={newRef}>
-            <div className="flex justify-between items-center px-4">
+            {!isLoading && <div className="flex justify-between items-center px-4">
                 <div>{`${filteredFiles?.length} Snapshot`}</div>
                 <div className="flex gap-2">
                     <input className="h-10 rounded bg-transparent border p-2" value={filterValue} onChange={(e) => { setFilterValue(e.target.value) }} onKeyDown={keyPressHandler} />
                     <button className="h-10 rounded text-xs px-4 bg-primary-foreground/50 hover:cursor-pointer" onClick={filter}>Search</button>
                     <button className="h-10 rounded p-2 bg-primary-foreground/50 hover:cursor-pointer" onClick={sort}><SortIcon /> </button>
                 </div>
-            </div>
+            </div>}
             <div className="scrollbar overflow-auto max-h-[200px] p-2">
                 {isLoading ? <div className="mx-auto">
                     <Spinner />

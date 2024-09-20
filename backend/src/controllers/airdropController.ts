@@ -143,6 +143,8 @@ const loadList = expressAsyncHandler(async (req: Request, res: Response) => {
     }
   }
 
+  if (!fs.existsSync(dir)) throw new CustomError(500, "Error reading the file.");
+
   // Read paginated data from file
   try {
     const data = await readListFromFile(dir);
@@ -178,4 +180,12 @@ const getUploadLogs = expressAsyncHandler(async (req: AuthRequest, res: Response
   res.status(200).json({ success: true, data: logs });
 })
 
-export { chunkUpload, finalUpload, loadList, transferToken, getUploadLogs }
+const getFile = expressAsyncHandler(async (req: AuthRequest, res: Response) => {
+  const { fileId } = req.params;
+
+  const file = await Upload.findOne({ _id: fileId });
+  res.status(200).json({file})
+
+})
+
+export { chunkUpload, finalUpload, loadList, transferToken, getUploadLogs, getFile }
