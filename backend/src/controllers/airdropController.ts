@@ -181,10 +181,13 @@ const getUploadLogs = expressAsyncHandler(async (req: AuthRequest, res: Response
 })
 
 const getFile = expressAsyncHandler(async (req: AuthRequest, res: Response) => {
-  const { fileId } = req.params;
+  const { id } = req.params;
 
-  const file = await Upload.findOne({ _id: fileId });
-  res.status(200).json({file})
+  console.log("id", id)
+
+  const file = await Upload.findOne({ _id: id });
+  console.log(file)
+  res.status(200).json({success:true, file})
 
 })
 

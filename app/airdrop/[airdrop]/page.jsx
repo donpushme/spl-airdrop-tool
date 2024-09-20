@@ -129,7 +129,9 @@ export default function Airdrop() {
   };
 
   const getFile = async (fileId) => {
+    console.log("auto loading fileId",fileId)
     const file = await fetchFile(fileId);
+    console.log("auto loading file", file)
     setFile(file);
   }
 
