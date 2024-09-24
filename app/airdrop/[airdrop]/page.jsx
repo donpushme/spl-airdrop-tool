@@ -73,6 +73,7 @@ export default function Airdrop() {
       totalAmount,
     } = getParams(path);
     if (flag == 0) {
+      console.log("multiplier goes here",multiplier)
       setAddress(address);
       setCounts(counts);
       setMuliplier(multiplier);
@@ -428,6 +429,7 @@ export default function Airdrop() {
                               value={multiplier[ruleNum]}
                               onChange={(e) => {
                                 let temp = multiplier;
+                                console.log(multiplier)
                                 temp.with(ruleNum, e.target.value)
                                 setMuliplier(temp);
                               }}
