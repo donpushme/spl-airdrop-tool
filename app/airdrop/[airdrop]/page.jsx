@@ -31,6 +31,7 @@ import UploadedFile from "@/components/airdrop/UploadedFile";
 import Description from "@/components/airdrop/AirdropDescription";
 import { useAlertContext } from "@/contexts/AlertContext";
 import { SuccessAlert, ErrorAlert } from "@/lib/alerts";
+import { Switch } from "@/components/ui/switch";
 
 export default function Airdrop() {
   const router = useRouter();
@@ -46,9 +47,9 @@ export default function Airdrop() {
   const [totalAmount, setTotalAmount] = useState("");
   const [address, setAddress] = useState("");
   const [collections, setCollections] = useState([]);
-  const [counts, setCounts] = useState([]);
+  const [counts, setCounts] = useState([[]]);
   const [totalCounts, setTotalCounts] = useState(0);
-  const [multiplier, setMuliplier] = useState(1);
+  const [multiplier, setMuliplier] = useState([1]);
   const [countAirdrop, setCountAirdrop] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [walletTokens, setWalletTokens] = useState([]);
@@ -57,7 +58,9 @@ export default function Airdrop() {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [showUpload, setShowUpload] = useState(false);
   const [file, setFile] = useState({});
-  const [steps, setSteps] = useState([false, false, false])
+  const [steps, setSteps] = useState([false, false, false]);
+  const [showMultiplier, setShowMultiplier] = useState(false);
+  const [ruleLen, setRuleLen] = useState(1);
 
   useEffect(() => {
     if (!isSigned) return;
@@ -75,8 +78,8 @@ export default function Airdrop() {
       setMuliplier(multiplier);
       setTotalAmount(totalAmount);
       setFileId(fileId);
-      getList(fileId);
       getFile(fileId);
+      getList(fileId);
     }
   }, [isSigned, fileId]);
 
@@ -109,13 +112,10 @@ export default function Airdrop() {
     const data = await loadListbyChunks(fileId);
     const list = data;
     console.log(list)
-    if (list.length) {
-      if (!Object.keys(list[0]).includes("balance")) {
+    if (list.length > 0) {
+      if (Object.keys(list[0]).includes("balance")) {
         const properties = Object.keys(list[0]).slice(1);
         setCollections(properties);
-        setCountAirdrop(true);
-      } else {
-        window.history.replaceState({}, "", removeCountsfromUrl(path));
       }
       setList(list);
       setIsLoading(false);
@@ -129,10 +129,27 @@ export default function Airdrop() {
   };
 
   const getFile = async (fileId) => {
-    console.log("auto loading fileId",fileId)
+    console.log("auto loading fileId", fileId)
     const file = await fetchFile(fileId);
-    console.log("auto loading file", file)
+    console.log("auto loading file", file);
+    if (file.type == 1) {
+      setCountAirdrop(true);
+    } else {
+      window.history.replaceState({}, "", removeCountsfromUrl(path));
+    }
     setFile(file);
+  }
+
+  const addNewRule = () => {
+    setRuleLen(pre => pre + 1);
+    setCounts(pre => pre.push([]));
+    setMuliplier(pre => pre.push(1));
+  }
+
+  const removeRule = () => {
+    setRuleLen(pre => pre - 1);
+    setCounts(pre => pre.pop());
+    setMuliplier(pre => pre.pop());
   }
 
   const getWalletTokens = useCallback(async () => {
@@ -266,11 +283,11 @@ export default function Airdrop() {
     startTransferToken(list, tempWallet, address, setList);
   };
 
-  const handleCountChange = (e, index) => {
+  const handleCountChange = (e, index, ruleNum) => {
     const value = e.target.value;
     setCounts((prevCounts) => {
       const newCounts = [...prevCounts];
-      newCounts[index] = value;
+      newCounts[ruleNum][index] = value;
       return newCounts;
     });
   };
@@ -328,9 +345,9 @@ export default function Airdrop() {
               {/* Step 2 */}
               {steps[0] && !steps[1] && <div>
                 <div>
-                  <div className="space-y-1">
+                  {!showMultiplier && <div className="space-y-1">
                     <Label htmlFor="amount_per_each">
-                      Amount per {countAirdrop ? "NFT" : "wallet"}
+                      Amount per {!countAirdrop ? "NFT" : "wallet"}
                     </Label>
                     <Input
                       id="amount_per_each"
@@ -340,7 +357,7 @@ export default function Airdrop() {
                       value={amountPerEach}
                       onChange={handleAmountPerEachChange}
                     />
-                  </div>
+                  </div>}
                   <div className="mt-4 space-y-1">
                     <Label htmlFor="totoal_amount">Total Amount</Label>
                     <Input
@@ -353,7 +370,84 @@ export default function Airdrop() {
                     />
                   </div>
                 </div>
+                {!countAirdrop && <div className="my-4 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <Label>Set Multiplier</Label>
+                    <Switch
+                      id="show_multiplier"
+                      checked={showMultiplier}
+                      onCheckedChange={() => {
+                        setShowMultiplier((pre) => !pre);
+                      }}
+                    />
+                  </div>
+                  {showMultiplier && <div className="flex gap-2">
+                    <button className="border p-2 rounded hover:bg-primary/20" onClick={addNewRule}>New Rule</button>
+                    {ruleLen > 1 && <button className="border p-2 rounded hover:bg-primary/20" onClick={removeRule}>Remove Rule</button>}
+                  </div>}
+                </div>}
+                {showMultiplier && (
+                  <>
+                    <hr />
+                    {new Array(ruleLen).fill(1).map((rule, ruleNum) => {
+                      return (
+                        <div className="flex justify-between" key={ruleNum}>
+                          <div className="flex gap-1 justify-start">
+                            {collections.map((item, index) => {
+                              return (
+                                <div key={index} className="flex gap-1">
+                                  {index != 0 && <div className="pt-8">+</div>}
+                                  <div className="my-0">
+                                    <Label
+                                      htmlFor={`${item}_count`}
+                                      className="text-xs font-light"
+                                    >
+                                      {item}
+                                    </Label>
+                                    <Input
+                                      className="max-w-[200px]"
+                                      id={`${item}_count`}
+                                      type="text"
+                                      value={counts[ruleNum][index] || ""}
+                                      onChange={(e) => {
+                                        handleCountChange(e, index, ruleNum);
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                          <div className="ml-1">
+                            <Label htmlFor="muliplier" className="text-xs font-light">
+                              Multiplier
+                            </Label>
+                            <Input
+                              id="muliplier"
+                              className="max-w-[200px]"
+                              value={multiplier[ruleNum]}
+                              onChange={(e) => {
+                                let temp = multiplier;
+                                temp.with(ruleNum, e.target.value)
+                                setMuliplier(temp);
+                              }}
+                              type="text"
+                            />
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </>
+                )}
               </div>}
+              {/* Step 3 */}
+              {steps[1] && !steps[2] && <div>
+                <div className="flex border-b p-4 justify-between"><div>Tokens Per NFT</div><div>{amountPerEach}</div></div>
+                <div className="flex border-b p-4 justify-between"><div>Number of Wallets</div><div>{list?.length}</div></div>
+                <div className="flex border-b p-4 justify-between"><div>Total tokens needed</div><div>{totalAmount}</div></div>
+                <div className="flex border-b p-4 justify-between"><div>Estimated Cost</div><div></div></div>
+              </div>}
+              {/* Button section */}
               <div className="space-y-1">
                 <hr className="mb-8" />
                 {!steps[0] && <div className="flex gap-1 items-center">
@@ -364,69 +458,13 @@ export default function Airdrop() {
                   <Button className="flex border border-green p-4 w-full gap-1" onClick={nextStep}><RocketIcon />Get Started</Button>
                   : <div className="flex justify-between">
                     <Button className="px-8 flex gap-4" onClick={backStep}><BackArrow />Back</Button>
-                    <Button className="px-8 flex gap-4" onClick={nextStep}>Next<NextArrow /></Button>
+                    {steps[1] == true ? <Button className="gap-4 flex" onClick={generateWallet}>
+                      Generate temporay wallet<NextArrow />
+                    </Button> : <Button className="px-8 flex gap-4" onClick={nextStep}>Next<NextArrow />
+                    </Button>}
                   </div>
                 }
               </div>
-              {collections.length > 0 ? (
-                <>
-                  <hr />
-                  <div className="space-y-1">
-                    <Label>Set Multiplier</Label>
-                    <div className="flex gap-1 justify-start">
-                      {collections.map((item, index) => {
-                        return (
-                          <div key={index} className="flex gap-1">
-                            {index != 0 && <div className="pt-8">+</div>}
-                            <div className="my-0">
-                              <Label
-                                htmlFor={`${item}_count`}
-                                className="text-xs font-light"
-                              >
-                                {item}
-                              </Label>
-                              <Input
-                                className="max-w-[100px]"
-                                id={`${item}_count`}
-                                type="text"
-                                value={counts[index] || ""}
-                                onChange={(e) => {
-                                  handleCountChange(e, index);
-                                }}
-                              />
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                    <div className="my-0">
-                      <Label htmlFor="muliplier" className="text-xs font-light">
-                        Multiplier
-                      </Label>
-                      <Input
-                        id="muliplier"
-                        value={multiplier}
-                        onChange={(e) => {
-                          setMuliplier(e.target.value);
-                        }}
-                        type="text"
-                        className="max-w-[100px]"
-                      />
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <></>
-              )}
-            </div>
-            <div>
-              {tempWallet.length == 0 ? (
-                <Button onClick={generateWallet}>
-                  Generate temporay wallet
-                </Button>
-              ) : (
-                <Button onClick={handleAirdrop}>Airdrop</Button>
-              )}
             </div>
           </div>
         </div>
@@ -434,6 +472,6 @@ export default function Airdrop() {
       {isLoading && <Loading />}
       {steps[0] == false ? <Description /> : <AirdropTable list={list} />}
 
-    </div>
+    </div >
   );
 }

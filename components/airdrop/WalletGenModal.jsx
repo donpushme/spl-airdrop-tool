@@ -45,7 +45,7 @@ export default function WalletGenModal() {
           <div className="w-[400px] text-sm border rounded p-2">
           <p className="text-center my-8 text-[16px]">Create a temporay wallet to be used in airdrop</p>
           {TEXT.map((text, index) => {return <p className="my-2 indent-2" key={index}>{`- ${text}`}</p>})}
-          <p className="mt-8 text-red-800 text-center"> * Please make sure you are correctly created the wallet with the secrete key above. Once you click OK button you can not generate a wallet*</p>
+          <p className="mt-8 text-red-800 text-center"> * Please make sure you correctly created the wallet with the secrete key above. Once you click OK button you can not generate a wallet*</p>
           </div>
           <div className="flex items-center space-x-2 my-4">
             <Checkbox id="terms" onClick={() => {setChecked((pre)=>!pre)}}/>
