@@ -17,6 +17,7 @@ import {
   makeURLwithAmount,
   removeCountsfromUrl,
   getParams,
+  getTotalCounts
 } from "@/lib/utils";
 import { startTransferToken } from "@/lib/airdrop";
 import { useAppContext } from "@/contexts/AppContext";
@@ -32,6 +33,7 @@ import Description from "@/components/airdrop/AirdropDescription";
 import { useAlertContext } from "@/contexts/AlertContext";
 import { SuccessAlert, ErrorAlert } from "@/lib/alerts";
 import { Switch } from "@/components/ui/switch";
+import { FEE_PER_TRANSFER } from "@/backend/src/config";
 
 export default function Airdrop() {
   const router = useRouter();
@@ -39,13 +41,12 @@ export default function Airdrop() {
   const { setAlert } = useAlertContext()
   const path = usePathname();
   const wallet = useWallet();
-  const { isSigned } = useAppContext();
+  const { isSigned, mint, setMint } = useAppContext();
   const { tempWallet, openWalletGenModal } = useModalContext();
   const [list, setList] = useState([]);
   const [fileId, setFileId] = useState("");
   const [amountPerEach, setAmountPerEach] = useState("");
   const [totalAmount, setTotalAmount] = useState("");
-  const [address, setAddress] = useState("");
   const [collections, setCollections] = useState([]);
   const [counts, setCounts] = useState([[]]);
   const [totalCounts, setTotalCounts] = useState(0);
@@ -61,6 +62,8 @@ export default function Airdrop() {
   const [steps, setSteps] = useState([false, false, false]);
   const [showMultiplier, setShowMultiplier] = useState(false);
   const [ruleLen, setRuleLen] = useState(1);
+  const [forceRender, setForceRender] = useState(true);
+  const [fee, setFee] = useState(0);
 
   useEffect(() => {
     if (!isSigned) return;
@@ -71,20 +74,22 @@ export default function Airdrop() {
       counts,
       multiplier,
       totalAmount,
+      ruleLen,
     } = getParams(path);
     if (flag == 0) {
-      setAddress(address);
+      setMint(address);
       setCounts(counts);
       setMuliplier(multiplier);
       setTotalAmount(totalAmount);
       setFileId(fileId);
       getFile(fileId);
       getList(fileId);
+      setRuleLen(ruleLen)
     }
   }, [isSigned, fileId]);
 
   useEffect(() => {
-    if (countAirdrop) {
+    if (!countAirdrop && showMultiplier) {
       const { amountPerCount, resultList } = multiplierAirdrop(
         list,
         totalAmount,
@@ -98,26 +103,29 @@ export default function Airdrop() {
       const url = makeURLwithMultiplier(path, counts, multiplier, totalAmount);
       window.history.replaceState({}, "", url);
     } else {
-      const resultList = simpleAirdrop(list, totalAmount);
+      const totalCounts = getTotalCounts(list, collections);
+      setTotalCounts(totalCounts)
+      const resultList = simpleAirdrop(list, totalAmount, totalCounts, collections);
       setList(resultList);
-      setTotalCounts(list.length);
       const url = makeURLwithAmount(path, totalAmount);
       window.history.replaceState({}, "", url);
     }
-  }, [counts, multiplier, countAirdrop, totalAmount]);
+  }, [counts, multiplier, countAirdrop, forceRender, totalAmount]);
 
   const getList = async (fileId) => {
     if (fileId == "") return;
     setIsLoading(true);
     const data = await loadListbyChunks(fileId);
     const list = data;
-    console.log(list)
-    if (list.length > 0) {
-      if (Object.keys(list[0]).includes("balance")) {
+    if (list && list.length > 0) {
+      if (!Object.keys(list[0]).includes("balance")) {
         const properties = Object.keys(list[0]).slice(1);
         setCollections(properties);
       }
+      const totalCounts = getTotalCounts(list, collections);
+      setTotalCounts(totalCounts)
       setList(list);
+      setFee(list.length * FEE_PER_TRANSFER)
       setIsLoading(false);
     }
   };
@@ -129,9 +137,6 @@ export default function Airdrop() {
   };
 
   const getFile = async (fileId) => {
-    console.log("auto loading fileId", fileId)
-    const file = await fetchFile(fileId);
-    console.log("auto loading file", file);
     if (file.type == 1) {
       setCountAirdrop(true);
     } else {
@@ -141,15 +146,27 @@ export default function Airdrop() {
   }
 
   const addNewRule = () => {
+    console.log("ruleLen", ruleLen, "counts", counts, "multiplier", multiplier);
     setRuleLen(pre => pre + 1);
-    setCounts(pre => pre.push([]));
-    setMuliplier(pre => pre.push(1));
+    setCounts(pre => {
+      return [...pre, []]
+    });
+    setMuliplier(pre => {
+      return [...pre, 1];
+    });
+    setForceRender(!forceRender);
+    console.log(counts.length, "counts length")
   }
 
   const removeRule = () => {
+    console.log("ruleLen", ruleLen, "counts", counts, "multiplier", multiplier)
     setRuleLen(pre => pre - 1);
-    setCounts(pre => pre.pop());
-    setMuliplier(pre => pre.pop());
+    setCounts(pre => {
+      return pre.slice(0, pre.length - 1)
+    });
+    setMuliplier(pre => {
+      return pre.slice(0, pre.length - 1)
+    });
   }
 
   const getWalletTokens = useCallback(async () => {
@@ -171,6 +188,7 @@ export default function Airdrop() {
     setIsExploring(true);
     const files = await fetchUploadedFiles();
     setUploadedFiles(files);
+    console.log(files)
     setIsExploring(false);
   }, [isSigned])
 
@@ -228,16 +246,16 @@ export default function Airdrop() {
   }
 
   const nextStep = useCallback(() => {
-    if (steps[0] == false && (!isValidSolanaAddress(address) || fileId == "" || typeof fileId == "undefined")) {
+    if (steps[0] == false && (!isValidSolanaAddress(mint) || fileId == "" || typeof fileId == "undefined")) {
       console.log("steps", steps)
-      console.log(address, fileId)
+      console.log(mint, fileId)
       setAlert({ ...ErrorAlert, text: "Please input correct address and file" })
       return
     }
     const nextId = steps.indexOf(false);
     let temp = steps.with(nextId, true);
     setSteps(temp)
-  }, [steps, address, fileId])
+  }, [steps, mint, fileId])
 
   const backStep = useCallback(() => {
     let nextId = steps.indexOf(false);
@@ -246,32 +264,33 @@ export default function Airdrop() {
     setSteps(temp)
   }, [steps])
 
-  const handleAmountPerEachChange = (e) => {
+  const handleAmountPerEachChange = useCallback((e) => {
+    console.log(e.target.value, "||||||||", totalCounts)
     const value = e.target.value;
     if (isNaN(Number(value))) return;
     setAmountPerEach(value || "");
     if (totalCounts) setTotalAmount(Number(value) * totalCounts || "");
-  };
+  }, [totalCounts, setAmountPerEach, setTotalAmount])
 
-  const handleTotalAmountChange = (e) => {
+  const handleTotalAmountChange = useCallback((e) => {
     const value = e.target.value;
     if (isNaN(Number(value))) return;
     setTotalAmount(value || "");
     if (totalCounts) setAmountPerEach(Number(value) / totalCounts || "");
-  };
+  }, [totalCounts, setAmountPerEach, setTotalAmount])
 
   const handleAddressChange = (e) => {
     const value = e.target.value;
-    setAddress(value);
+    setMint(value);
     if (isValidSolanaAddress(value) || value == "") {
       window.history.replaceState({}, "", makeURLwithAddress(path, value));
     }
   };
 
-  const changeAddress = (address) => {
-    setAddress(address);
-    if (isValidSolanaAddress(address) || address == "") {
-      window.history.replaceState({}, "", makeURLwithAddress(path, address));
+  const changeAddress = (mint) => {
+    setMint(mint);
+    if (isValidSolanaAddress(mint) || mint == "") {
+      window.history.replaceState({}, "", makeURLwithAddress(path, mint));
     }
   }
 
@@ -280,17 +299,27 @@ export default function Airdrop() {
   };
 
   const handleAirdrop = () => {
-    startTransferToken(list, tempWallet, address, setList);
+    startTransferToken(list, tempWallet, mint, setList);
   };
 
-  const handleCountChange = (e, index, ruleNum) => {
+  const handleCountChange = useCallback((e, index, ruleNum) => {
+    console.log(counts)
     const value = e.target.value;
     setCounts((prevCounts) => {
       const newCounts = [...prevCounts];
       newCounts[ruleNum][index] = value;
       return newCounts;
     });
-  };
+  }, [counts, setCounts, forceRender, setForceRender])
+
+  const handleMultiplierChanged = useCallback((e, ruleNum) => {
+    console.log(multiplier)
+    setMuliplier((multipliers) => {
+      multipliers[ruleNum] = e.target.value;
+      return multipliers;
+    });
+    setForceRender(!forceRender);
+  }, [multiplier, setMuliplier, forceRender, setForceRender])
 
   return (
     <div>
@@ -312,12 +341,12 @@ export default function Airdrop() {
                       id="address"
                       placeholder="Select Tokens / Input token address"
                       className="placeholder-disabled p-4 border-0 w-[calc(100%-120px)]"
-                      value={address}
+                      value={mint}
                       onChange={handleAddressChange}
                     />
                     <button className="w-[120px] hover:cursor-pointer border-l text-xs bg-primary-foreground/50 rounded-r-md flex gap-2 items-center justify-center" disabled={!isSigned} onClick={getWalletTokens}>Explore Wallet<RightArrow /></button>
                   </div>
-                  {showWalletTokens && <WalletToken tokens={walletTokens} setShowWalletTokens={setShowWalletTokens} isLoading={isExploring} setAddress={changeAddress} />}
+                  {showWalletTokens && <WalletToken tokens={walletTokens} setShowWalletTokens={setShowWalletTokens} isLoading={isExploring} setMint={changeAddress} />}
                 </div>
                 <div className="my-4 relative">
                   <div className="flex gap-2">
@@ -382,7 +411,7 @@ export default function Airdrop() {
                     />
                   </div>
                   {showMultiplier && <div className="flex gap-2">
-                    <button className="border p-2 rounded hover:bg-primary/20" onClick={addNewRule}>New Rule</button>
+                    <button className="border p-2 rounded hover:bg-primary/20 text-sm" onClick={addNewRule}>New Rule</button>
                     {ruleLen > 1 && <button className="border p-2 rounded hover:bg-primary/20" onClick={removeRule}>Remove Rule</button>}
                   </div>}
                 </div>}
@@ -426,11 +455,7 @@ export default function Airdrop() {
                               id="muliplier"
                               className="max-w-[200px]"
                               value={multiplier[ruleNum]}
-                              onChange={(e) => {
-                                let temp = multiplier;
-                                temp.with(ruleNum, e.target.value)
-                                setMuliplier(temp);
-                              }}
+                              onChange={(e) => { handleMultiplierChanged(e, ruleNum) }}
                               type="text"
                             />
                           </div>
@@ -445,7 +470,7 @@ export default function Airdrop() {
                 <div className="flex border-b p-4 justify-between"><div>Tokens Per NFT</div><div>{amountPerEach}</div></div>
                 <div className="flex border-b p-4 justify-between"><div>Number of Wallets</div><div>{list?.length}</div></div>
                 <div className="flex border-b p-4 justify-between"><div>Total tokens needed</div><div>{totalAmount}</div></div>
-                <div className="flex border-b p-4 justify-between"><div>Estimated Cost</div><div></div></div>
+                <div className="flex border-b p-4 justify-between"><div>Estimated Cost</div><div></div>{fee} SOL</div>
               </div>}
               {/* Button section */}
               <div className="space-y-1">

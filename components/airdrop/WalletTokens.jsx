@@ -5,7 +5,7 @@ import Spinner_1 from "../Assests/spinner/Spinner_1";
 import Spinner from "../Assests/spinner/Spinner";
 
 
-export default function WalletToken({ tokens, setShowWalletTokens, isLoading, setAddress }) {
+export default function WalletToken({ tokens, setShowWalletTokens, isLoading, setMint }) {
     const newRef = useRef(null); // Typing the ref correctly
 
     useEffect(() => {
@@ -26,7 +26,7 @@ export default function WalletToken({ tokens, setShowWalletTokens, isLoading, se
     }
 
     const selectToken = (address) => {
-        setAddress(address);
+        setMint(address);
         closeMenu();
     }
 
