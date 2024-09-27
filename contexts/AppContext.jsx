@@ -9,6 +9,7 @@ export const AppProvider = ({ children }) => {
   const [mouseTrack, setMouseTrack] = useState(true);
   const [mint, setMint] = useState("");
   const [price, setPrice] = useState(0);
+  const [canStartAirdrop, setCanStartAirdrop] = useState(false);
 
   useEffect(() => {
     const handleMouseMove = (event) => {
@@ -47,12 +48,14 @@ export const AppProvider = ({ children }) => {
         showLeftBar,
         mint,
         price,
+        canStartAirdrop,
         setShowLeftBar,
         setShowRightBar,
         setIsSigned,
         setMouseTrack,
         setMint,
-        setPrice
+        setPrice,
+        setCanStartAirdrop
       }}
     >
       {children}

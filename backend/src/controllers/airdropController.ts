@@ -150,7 +150,7 @@ const loadList = expressAsyncHandler(async (req: Request, res: Response) => {
     const data = await readListFromFile(dir);
     const paginatedData = data.slice(start, end);
     if ((paginatedData.length == 0 || typeof paginatedData == "undefined")) {
-      // await deleteFile(dir);
+      await deleteFile(dir);
     }
     res.status(200).json({ paginatedData });
   } catch (error) {

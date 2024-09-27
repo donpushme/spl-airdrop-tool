@@ -5,6 +5,9 @@ export const ModalContext = createContext();
 export const ModalProvider = ({ children }) => {
   const [showWalletGenModal, setShowWalletGenModal] = useState(false);
   const [tempWallet, setTempWallet] = useState("");
+  const [totalAmount, setTotalAmount] = useState("");
+  const [fee, setFee] = useState(0);
+
 
   const openWalletGenModal = () => {
     setShowWalletGenModal(true);
@@ -15,7 +18,7 @@ export const ModalProvider = ({ children }) => {
   }
   return (
     <ModalContext.Provider
-      value={{showWalletGenModal, tempWallet, setTempWallet, setShowWalletGenModal, openWalletGenModal, closeWalletGenModal}}
+      value={{showWalletGenModal, tempWallet, setTempWallet, setShowWalletGenModal, openWalletGenModal, closeWalletGenModal, totalAmount, setTotalAmount, fee, setFee}}
     >
       {children}
     </ModalContext.Provider>
