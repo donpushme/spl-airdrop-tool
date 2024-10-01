@@ -1,5 +1,5 @@
 import { useAppContext } from "@/contexts/AppContext"
-import { getSplTokenList } from "@/lib/solana";
+import { getToken, isValidSolanaAddress } from "@/lib/solana";
 import { useCallback, useEffect, useState } from "react";
 
 export const useToken = () => {
@@ -8,13 +8,13 @@ export const useToken = () => {
     const [isLoading, setIsLoading] = useState(false)
 
     useEffect(() => {
+        if(!isValidSolanaAddress(mint)) return
         setIsLoading(true);
         start()
     }, [mint]);
 
     const start = useCallback(async () => {
-        const allSpl = await getSplTokenList();
-        const token = allSpl.find((token) => { return token.address == mint });
+        const token = await getToken(mint);
         setToken(token);
         setIsLoading(false);
     }, [mint])

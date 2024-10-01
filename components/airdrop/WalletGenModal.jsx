@@ -131,15 +131,15 @@ export default function WalletGenModal() {
           <div className="flex justify-between gap-2 border-b pb-2">
             <div className="flex gap-2">
               <div className="relative aspect-square w-10 rounded-full">
-                <Image className="rounded-full" loader={() => token.logoURI} src="me.png" fill alt="token image" />
+                <Image className="rounded-full" loader={() => token?.logoURI} src="me.png" fill alt="token image" />
               </div>
               <div>
-                <div>{token.name}</div>
-                <div className="flex gap-2 text-xs">{token.address}<CopyButton value={token.address} /></div>
+                <div>{token?.name}</div>
+                <div className="flex gap-2 text-xs">{token?.address}<CopyButton value={token?.address} /></div>
               </div>
             </div>
             <div className="flex items-center">
-              {`${totalAmount} ${token.symbol}`}
+              {`${totalAmount} ${token?.symbol}`}
             </div>
           </div>
           <div className="flex justify-between pt-4 pb-2 border-b">

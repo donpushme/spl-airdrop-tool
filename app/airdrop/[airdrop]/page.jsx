@@ -513,7 +513,7 @@ export default function Airdrop() {
                     {/* Image Component */}
                     <img
                       className="rounded-full"
-                      src={token?.logoURI}
+                      src={token?.image}
                       alt="token image"
                       fill
                     />
