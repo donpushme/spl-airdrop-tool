@@ -13,6 +13,9 @@ import { XIcon } from "lucide-react";
 import { useToken } from "@/hooks/useToken";
 import Image from "next/image";
 import { useAppContext } from "@/contexts/AppContext";
+import { checkBalance } from "@/lib/solana";
+import { ErrorAlert } from "@/lib/alerts";
+import { useAlertContext } from "@/contexts/AlertContext";
 
 export default function WalletGenModal() {
   const [checked, setChecked] = useState(false);
@@ -24,7 +27,8 @@ export default function WalletGenModal() {
   const [isShow, setIsShow] = useState(false);
   const { token, isLoading } = useToken();
   const [step, setStep] = useState(1);
-  const {setCanStartAirdrop} = useAppContext();
+  const { setCanStartAirdrop } = useAppContext();
+  const {setAlert} = useAlertContext()
 
   const secretKey = useRef(null);
   const publicKey = useRef(null);
@@ -47,11 +51,16 @@ export default function WalletGenModal() {
     closeWalletGenModal();
   }
 
-  const walletGenerated = () => {
+  const walletGenerated = useCallback(async () => {
+    const isWalletFunded = await checkBalance(publicKey.current, token.address, fee, totalAmount);
+    if (!isWalletFunded) {
+      setAlert({...ErrorAlert, text: "The wallet is not funded"})
+      return
+    }
     closeModal();
     setTempWallet(secretKey.current);
     setCanStartAirdrop(true);
-  }
+  }, [publicKey, token, fee, totalAmount, secretKey])
 
   const toggleShow = () => {
     setIsShow(!isShow)
