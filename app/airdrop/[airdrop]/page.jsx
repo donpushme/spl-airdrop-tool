@@ -389,7 +389,7 @@ export default function Airdrop() {
                 <div>
                   {!showMultiplier && <div className="space-y-1">
                     <Label htmlFor="amount_per_each">
-                      Amount per {!file.isNft ? "NFT" : "wallet"}
+                      Amount per {file.isNft ? "NFT" : "wallet"}
                     </Label>
                     <Input
                       id="amount_per_each"
