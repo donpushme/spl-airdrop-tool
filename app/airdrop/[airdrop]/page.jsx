@@ -148,7 +148,7 @@ export default function Airdrop() {
 
   const getFile = async (fileId) => {
     const file = await fetchFile(fileId);
-    if (file.type == 1) {
+    if (file.isNft) {
       setCountAirdrop(true);
     } else {
       window.history.replaceState({}, "", removeCountsfromUrl(path));
