@@ -148,7 +148,7 @@ export default function Airdrop() {
 
   const getFile = async (fileId) => {
     const file = await fetchFile(fileId);
-    if (file.isNft) {
+    if (file.type == 1) {
       setCountAirdrop(true);
     } else {
       window.history.replaceState({}, "", removeCountsfromUrl(path));
@@ -339,8 +339,24 @@ export default function Airdrop() {
       <div className="w-[900px] mx-auto">
         <Heading steps={steps} />
         <div>
+
           {!canStartAirdrop && <div className="p-8 border rounded-xl">
             <div className="space-y-6">
+            {token?.name != 'unknown' && 
+              <div className="flex justify-between gap-2 border-b pb-2">
+                <div className="flex gap-2">
+                  <div className="relative aspect-square w-10 rounded-full">
+                    <image className="rounded-full" src={token?.image} fill alt="token image" />
+                  </div>
+                  <div>
+                    <div>{token?.name}</div>
+                    <div className="flex gap-2 text-xs">{token?.address}<CopyButton value={token?.address} /></div>
+                  </div>
+                </div>
+                <div className="flex items-center">
+                  {`${totalAmount} ${token?.symbol}`}
+                </div>
+              </div>}
               {/* Step 1 */}
               {!steps[0] && <div>
                 <div className="my-4 relative">
@@ -389,7 +405,7 @@ export default function Airdrop() {
                 <div>
                   {!showMultiplier && <div className="space-y-1">
                     <Label htmlFor="amount_per_each">
-                      Amount per {file.isNft ? "NFT" : "wallet"}
+                      Amount per {!countAirdrop ? "NFT" : "wallet"}
                     </Label>
                     <Input
                       id="amount_per_each"
@@ -531,7 +547,7 @@ export default function Airdrop() {
                 {isAirdropStarted ? <Spinner_1 /> : <div className="flex justify-center my-8">
                   <div>
                     <div className="text-center">Airdrop has completed successfully!</div>
-                    <div className="flex justify-center mt-4"><Button className="border" onClick={() => {router.push("/airdrop/inputfile")}}>New Airdrop</Button></div>
+                    <div className="flex justify-center mt-4"><Button className="border" onClick={() => { router.push("/airdrop/inputfile") }}>New Airdrop</Button></div>
                   </div>
                 </div>}
               </div>
