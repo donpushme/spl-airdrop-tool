@@ -38,6 +38,7 @@ import { useToken } from "@/hooks/useToken";
 import CopyButton from "@/components/airdrop/CopyButton";
 import Spinner from "@/components/Assests/spinner/Spinner";
 import Spinner_1 from "@/components/Assests/spinner/Spinner_1";
+import Image from "next/image";
 
 export default function Airdrop() {
   const router = useRouter();
@@ -346,7 +347,7 @@ export default function Airdrop() {
               <div className="flex justify-between gap-2 border-b pb-2">
                 <div className="flex gap-2">
                   <div className="relative aspect-square w-10 rounded-full">
-                    <image className="rounded-full" src={token?.image} fill alt="token image" />
+                    <Image className="rounded-full" src={token?.image} fill alt="token image" />
                   </div>
                   <div>
                     <div>{token?.name}</div>
