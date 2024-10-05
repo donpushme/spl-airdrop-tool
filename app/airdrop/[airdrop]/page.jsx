@@ -149,7 +149,7 @@ export default function Airdrop() {
 
   const getFile = async (fileId) => {
     const file = await fetchFile(fileId);
-    if (file.type == 1) {
+    if (file.isNft) {
       setCountAirdrop(true);
     } else {
       window.history.replaceState({}, "", removeCountsfromUrl(path));
@@ -277,7 +277,6 @@ export default function Airdrop() {
   }, [steps])
 
   const handleAmountPerEachChange = useCallback((e) => {
-    console.log(e.target.value, "||||||||", totalCounts)
     const value = e.target.value;
     if (isNaN(Number(value))) return;
     setAmountPerEach(value || "");
@@ -429,7 +428,7 @@ export default function Airdrop() {
                     />
                   </div>
                 </div>
-                {!isNft && <div className="my-4 flex items-center justify-between gap-4">
+                {countAirdrop && <div className="my-4 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
                     <Label>Set Multiplier</Label>
                     <Switch
