@@ -347,7 +347,7 @@ export default function Airdrop() {
               <div className="flex justify-between gap-2 border-b pb-2">
                 <div className="flex gap-2">
                   <div className="relative aspect-square w-10 rounded-full">
-                    <Image className="rounded-full" src={token?.image} fill alt="token image" />
+                    <Image className="rounded-full" loader={() => token?.image} src='me.png' fill alt="token image" />
                   </div>
                   <div>
                     <div>{token?.name}</div>
