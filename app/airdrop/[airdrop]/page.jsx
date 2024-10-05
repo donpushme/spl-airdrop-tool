@@ -429,7 +429,7 @@ export default function Airdrop() {
                     />
                   </div>
                 </div>
-                {!countAirdrop && <div className="my-4 flex items-center justify-between gap-4">
+                {!isNft && <div className="my-4 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
                     <Label>Set Multiplier</Label>
                     <Switch
