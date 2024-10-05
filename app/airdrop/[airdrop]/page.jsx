@@ -136,6 +136,7 @@ export default function Airdrop() {
       setTotalCounts(totalCounts)
       setList(list);
       setFee(list.length * FEE_PER_TRANSFER)
+      
       setIsLoading(false);
     }
   };
