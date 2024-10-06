@@ -17,7 +17,9 @@ import {
   makeURLwithAmount,
   removeCountsfromUrl,
   getParams,
-  getTotalCounts
+  getTotalCountForSimple,
+  getTotalCountForFt,
+  ftAridrop
 } from "@/lib/utils";
 import { startTransferToken } from "@/lib/airdrop";
 import { useAppContext } from "@/contexts/AppContext";
@@ -69,6 +71,7 @@ export default function Airdrop() {
   const [forceRender, setForceRender] = useState(true);
   const { token } = useToken();
   const [isAirdropStarted, setIsAirdropStarted] = useState(false)
+  const [balanceAirdrop, setBalanceAirdrop] = useState(false);
 
   useEffect(() => {
     if (!isSigned) return;
@@ -100,7 +103,7 @@ export default function Airdrop() {
   }, [canStartAirdrop])
 
   useEffect(() => {
-    if (!countAirdrop && showMultiplier) {
+    if (countAirdrop && showMultiplier) {
       const { amountPerCount, resultList } = multiplierAirdrop(
         list,
         totalAmount,
@@ -113,13 +116,18 @@ export default function Airdrop() {
       setAmountPerEach(amountPerCount || "");
       const url = makeURLwithMultiplier(path, counts, multiplier, totalAmount);
       window.history.replaceState({}, "", url);
-    } else {
-      const totalCounts = getTotalCounts(list, collections);
+    } else if (countAirdrop) {
+      const totalCounts = getTotalCountForSimple(list, collections);
       setTotalCounts(totalCounts)
       const resultList = simpleAirdrop(list, totalAmount, totalCounts, collections);
       setList(resultList);
       const url = makeURLwithAmount(path, totalAmount);
       window.history.replaceState({}, "", url);
+    } else {
+      const totalCounts = getTotalCountForFt(list, balanceAirdrop);
+      setTotalCounts(totalCounts)
+      const resultList = ftAridrop(list, totalAmount, totalCounts, balanceAirdrop);
+      setList(resultList);
     }
   }, [counts, multiplier, countAirdrop, forceRender, totalAmount]);
 
@@ -133,14 +141,22 @@ export default function Airdrop() {
         const properties = Object.keys(list[0]).slice(1);
         setCollections(properties);
       }
-      const totalCounts = getTotalCounts(list, collections);
+      const totalCounts = getTotalCountForSimple(list, collections);
       setTotalCounts(totalCounts)
       setList(list);
       setFee(list.length * FEE_PER_TRANSFER)
-      
+
       setIsLoading(false);
     }
   };
+
+  const switchMultiplierMode = () => {
+    if (showMultiplier) {
+      setMuliplier([1]);
+      setCounts([[]]);
+    }
+    setShowMultiplier(pre => !pre)
+  }
 
   const clear = () => {
     setList([]);
@@ -343,21 +359,21 @@ export default function Airdrop() {
 
           {!canStartAirdrop && <div className="p-8 border rounded-xl">
             <div className="space-y-6">
-            {token?.name != 'unknown' && 
-              <div className="flex justify-between gap-2 border-b pb-2">
-                <div className="flex gap-2">
-                  <div className="relative aspect-square w-10 rounded-full">
-                    <Image className="rounded-full" loader={() => token?.image} src='me.png' fill alt="token image" />
+              {token?.name != 'unknown' &&
+                <div className="flex justify-between gap-2 border-b pb-2">
+                  <div className="flex gap-2">
+                    <div className="relative aspect-square w-10 rounded-full">
+                      <Image className="rounded-full" loader={() => token?.image} src='me.png' fill alt="token image" />
+                    </div>
+                    <div>
+                      <div>{token?.name}</div>
+                      <div className="flex gap-2 text-xs">{token?.address}<CopyButton value={token?.address} /></div>
+                    </div>
                   </div>
-                  <div>
-                    <div>{token?.name}</div>
-                    <div className="flex gap-2 text-xs">{token?.address}<CopyButton value={token?.address} /></div>
+                  <div className="flex items-center">
+                    {`${totalAmount} ${token?.symbol}`}
                   </div>
-                </div>
-                <div className="flex items-center">
-                  {`${totalAmount} ${token?.symbol}`}
-                </div>
-              </div>}
+                </div>}
               {/* Step 1 */}
               {!steps[0] && <div>
                 <div className="my-4 relative">
@@ -406,7 +422,7 @@ export default function Airdrop() {
                 <div>
                   {!showMultiplier && <div className="space-y-1">
                     <Label htmlFor="amount_per_each">
-                      Amount per {!countAirdrop ? "NFT" : "wallet"}
+                      Amount per {countAirdrop ? "NFT" : "wallet"}
                     </Label>
                     <Input
                       id="amount_per_each"
@@ -435,9 +451,7 @@ export default function Airdrop() {
                     <Switch
                       id="show_multiplier"
                       checked={showMultiplier}
-                      onCheckedChange={() => {
-                        setShowMultiplier((pre) => !pre);
-                      }}
+                      onCheckedChange={switchMultiplierMode}
                     />
                   </div>
                   {showMultiplier && <div className="flex gap-2">
