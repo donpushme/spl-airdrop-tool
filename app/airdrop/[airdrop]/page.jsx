@@ -441,7 +441,7 @@ export default function Airdrop() {
               {/* Step 2 */}
               {steps[0] && !steps[1] && <div>
                 <div>
-                  {!showMultiplier && <div className="space-y-1">
+                  {!showMultiplier && !balanceAirdrop && <div className="space-y-1">
                     <Label htmlFor="amount_per_each">
                       Amount per {countAirdrop ? "NFT" : "wallet"}
                     </Label>
