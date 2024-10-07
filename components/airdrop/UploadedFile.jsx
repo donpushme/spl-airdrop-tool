@@ -11,6 +11,8 @@ export default function UploadedFile({ files, setShowUpload, isLoading, changeFi
     const [filterValue, setFilterValue] = useState("");
     const [sortType, setSortType] = useState(false);
 
+    useEffect(() => { setFilteredFiles(files) }, [isLoading])
+
     useEffect(() => {
         const handleOutsideClick = (e) => {
             if (newRef.current && !newRef.current.contains(e.target)) {

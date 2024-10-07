@@ -35,12 +35,14 @@ import Description from "@/components/airdrop/AirdropDescription";
 import { useAlertContext } from "@/contexts/AlertContext";
 import { SuccessAlert, ErrorAlert } from "@/lib/alerts";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { FEE_PER_TRANSFER } from "@/backend/src/config";
 import { useToken } from "@/hooks/useToken";
 import CopyButton from "@/components/airdrop/CopyButton";
 import Spinner from "@/components/Assests/spinner/Spinner";
 import Spinner_1 from "@/components/Assests/spinner/Spinner_1";
 import Image from "next/image";
+import { downloadAirdropResult } from "@/lib/utils";
 
 export default function Airdrop() {
   const router = useRouter();
@@ -72,6 +74,7 @@ export default function Airdrop() {
   const { token } = useToken();
   const [isAirdropStarted, setIsAirdropStarted] = useState(false)
   const [balanceAirdrop, setBalanceAirdrop] = useState(false);
+  const [stack, setStack] = useState(false);
 
   useEffect(() => {
     if (!isSigned) return;
@@ -110,14 +113,17 @@ export default function Airdrop() {
         collections,
         counts,
         multiplier,
-        setTotalCounts
+        setTotalCounts,
+        stack
       );
+      console.log("multiplier airdrop", { totalCounts })
       setList(resultList);
       setAmountPerEach(amountPerCount || "");
       const url = makeURLwithMultiplier(path, counts, multiplier, totalAmount);
       window.history.replaceState({}, "", url);
     } else if (countAirdrop) {
       const totalCounts = getTotalCountForSimple(list, collections);
+      console.log("simpleAirdrop", { totalCounts })
       setTotalCounts(totalCounts)
       const resultList = simpleAirdrop(list, totalAmount, totalCounts, collections);
       setList(resultList);
@@ -125,11 +131,12 @@ export default function Airdrop() {
       window.history.replaceState({}, "", url);
     } else {
       const totalCounts = getTotalCountForFt(list, balanceAirdrop);
+      console.log("Fungible token airdrop", { totalCounts })
       setTotalCounts(totalCounts)
       const resultList = ftAridrop(list, totalAmount, totalCounts, balanceAirdrop);
       setList(resultList);
     }
-  }, [counts, multiplier, countAirdrop, forceRender, totalAmount]);
+  }, [counts, multiplier, countAirdrop, forceRender, totalAmount, balanceAirdrop]);
 
   const getList = async (fileId) => {
     if (fileId == "") return;
@@ -137,18 +144,22 @@ export default function Airdrop() {
     const data = await loadListbyChunks(fileId);
     const list = data;
     if (list && list.length > 0) {
+      let properties = [];
       if (!Object.keys(list[0]).includes("balance")) {
-        const properties = Object.keys(list[0]).slice(1);
+        properties = Object.keys(list[0]).slice(1);
         setCollections(properties);
       }
-      const totalCounts = getTotalCountForSimple(list, collections);
+      const totalCounts = getTotalCountForSimple(list, properties);
       setTotalCounts(totalCounts)
       setList(list);
       setFee(list.length * FEE_PER_TRANSFER)
-
       setIsLoading(false);
     }
   };
+
+  const download = useCallback(() => {
+    if (list.length > 0) downloadAirdropResult(list, "airdrop_result");
+  }, [list, token])
 
   const switchMultiplierMode = () => {
     if (showMultiplier) {
@@ -156,6 +167,10 @@ export default function Airdrop() {
       setCounts([[]]);
     }
     setShowMultiplier(pre => !pre)
+  }
+
+  const switchBalanceMode = () => {
+    setBalanceAirdrop(!balanceAirdrop)
   }
 
   const clear = () => {
@@ -219,6 +234,7 @@ export default function Airdrop() {
     setUploadedFiles(files);
     console.log(files)
     setIsExploring(false);
+    setForceRender(!forceRender)
   }, [isSigned])
 
   /**
@@ -294,6 +310,7 @@ export default function Airdrop() {
   }, [steps])
 
   const handleAmountPerEachChange = useCallback((e) => {
+    console.log({ totalCounts })
     const value = e.target.value;
     if (isNaN(Number(value))) return;
     setAmountPerEach(value || "");
@@ -359,7 +376,7 @@ export default function Airdrop() {
 
           {!canStartAirdrop && <div className="p-8 border rounded-xl">
             <div className="space-y-6">
-              {token?.name != 'unknown' &&
+              {typeof token?.name != 'undefined' &&
                 <div className="flex justify-between gap-2 border-b pb-2">
                   <div className="flex gap-2">
                     <div className="relative aspect-square w-10 rounded-full">
@@ -371,7 +388,7 @@ export default function Airdrop() {
                     </div>
                   </div>
                   <div className="flex items-center">
-                    {`${totalAmount} ${token?.symbol}`}
+                    {`${token?.symbol}`}
                   </div>
                 </div>}
               {/* Step 1 */}
@@ -445,6 +462,16 @@ export default function Airdrop() {
                     />
                   </div>
                 </div>
+                {!countAirdrop && <div className="my-4 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <Label>Airdrop according To Balance</Label>
+                    <Switch
+                      id="set_balance_mode"
+                      value={balanceAirdrop}
+                      onCheckedChange={switchBalanceMode}
+                    />
+                  </div>
+                </div>}
                 {countAirdrop && <div className="my-4 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
                     <Label>Set Multiplier</Label>
@@ -453,12 +480,17 @@ export default function Airdrop() {
                       checked={showMultiplier}
                       onCheckedChange={switchMultiplierMode}
                     />
+                    {showMultiplier && <div className="flex items-center gap-4">
+                      <Label>Stack</Label>
+                      <Checkbox id="stack" onClick={() => { setStack((pre) => !pre) }} />
+                    </div>}
                   </div>
                   {showMultiplier && <div className="flex gap-2">
                     <button className="border p-2 rounded hover:bg-primary/20 text-sm" onClick={addNewRule}>New Rule</button>
                     {ruleLen > 1 && <button className="border p-2 rounded hover:bg-primary/20" onClick={removeRule}>Remove Rule</button>}
                   </div>}
                 </div>}
+
                 {showMultiplier && (
                   <>
                     <hr />
@@ -520,7 +552,7 @@ export default function Airdrop() {
               <div className="space-y-1">
                 <hr className="mb-8" />
                 {!steps[0] && <div className="flex gap-1 items-center">
-                  <Label>Dont't have snapshot list?</Label>
+                  <Label>Do not have the snapshot list?</Label>
                   <Link href="/snapshot/ft" className="text-green text-sm">Click here</Link>
                 </div>}
                 {steps[0] == false ?
@@ -562,7 +594,10 @@ export default function Airdrop() {
                 {isAirdropStarted ? <Spinner_1 /> : <div className="flex justify-center my-8">
                   <div>
                     <div className="text-center">Airdrop has completed successfully!</div>
-                    <div className="flex justify-center mt-4"><Button className="border" onClick={() => { router.push("/airdrop/inputfile") }}>New Airdrop</Button></div>
+                    <div className="flex justify-center mt-4 gap-4">
+                      <Button className="border" onClick={() => { router.push("/airdrop/inputfile") }}>New Airdrop</Button>
+                      <Button className="border" onClick={() => { download }}>Download</Button>
+                    </div>
                   </div>
                 </div>}
               </div>
@@ -572,7 +607,6 @@ export default function Airdrop() {
       </div>
       {isLoading && <Loading />}
       {steps[0] == false ? <Description /> : <AirdropTable list={list} />}
-
     </div >
   );
 }
