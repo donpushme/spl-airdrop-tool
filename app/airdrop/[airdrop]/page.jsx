@@ -175,7 +175,10 @@ export default function Airdrop() {
 
   const clear = () => {
     setList([]);
-    setAmountPerEach("");
+    // setAmountPerEach("");
+    // setTotalAmount("");
+    setCollections([]);
+    // setCounts([[]]);
     window.history.replaceState({}, "", removeCountsfromUrl(path));
   };
 
@@ -243,6 +246,7 @@ export default function Airdrop() {
    * @returns
    */
   const onChooseFile = async (event) => {
+    clear();
     const target = event.target;
     if (target.files && target.files.length > 0) {
       const file = target.files[0];
