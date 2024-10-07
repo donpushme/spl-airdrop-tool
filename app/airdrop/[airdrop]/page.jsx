@@ -345,7 +345,7 @@ export default function Airdrop() {
 
   const handleAirdrop = async () => {
     setIsAirdropStarted(true);
-    await startTransferToken(list, tempWallet, mint, setList);
+    await startTransferToken(list, tempWallet, token, setList);
     setIsAirdropStarted(false);
   };
 
