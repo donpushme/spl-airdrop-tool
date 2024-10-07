@@ -66,7 +66,7 @@ export default function AirdropTable(props) {
                             {list[rowsPerPage * (page - 1) + index][property]}
                           </div>
                           <div>
-                            {(property === "owner" || property === "tx") && (
+                            {((property === "owner" || property === "tx") && list[rowsPerPage * (page - 1) + index][property] != "failed") && (
                               <CopyButton
                                 value={
                                   list[rowsPerPage * (page - 1) + index][

@@ -21,11 +21,11 @@ import {
   getTotalCountForFt,
   ftAridrop
 } from "@/lib/utils";
-import { startTransferToken } from "@/lib/airdrop";
+import { judgeResult, startTransferToken } from "@/lib/airdrop";
 import { useAppContext } from "@/contexts/AppContext";
 import Loading from "@/components/Loading";
 import Heading from "@/components/airdrop/Heading";
-import { BackArrow, HelpIcon, NextArrow, RightArrow, RocketIcon, UploadIcon } from "@/components/Assests/icons/Icon";
+import { BackArrow, FaildIcon, HelpIcon, NextArrow, RightArrow, RocketIcon, SmallWallet, UploadIcon } from "@/components/Assests/icons/Icon";
 import Link from "next/link";
 import WalletToken from "@/components/airdrop/WalletTokens";
 import { fetchWalletTokens, isValidSolanaAddress } from "@/lib/solana";
@@ -50,7 +50,7 @@ export default function Airdrop() {
   const { setAlert } = useAlertContext()
   const path = usePathname();
   const wallet = useWallet();
-  const { isSigned, mint, setMint, canStartAirdrop } = useAppContext();
+  const { isSigned, mint, setMint, canStartAirdrop, setCanStartAirdrop } = useAppContext();
   const { tempWallet, openWalletGenModal, totalAmount, setTotalAmount, fee, setFee } = useModalContext();
   const [list, setList] = useState([]);
   const [fileId, setFileId] = useState("");
@@ -75,6 +75,8 @@ export default function Airdrop() {
   const [isAirdropStarted, setIsAirdropStarted] = useState(false)
   const [balanceAirdrop, setBalanceAirdrop] = useState(false);
   const [stack, setStack] = useState(false);
+  const [success, setSuccess] = useState(0);
+  const [failed, setFailed] = useState(0);
 
   useEffect(() => {
     if (!isSigned) return;
@@ -104,6 +106,14 @@ export default function Airdrop() {
       handleAirdrop()
     }
   }, [canStartAirdrop])
+
+  useEffect(() => {
+    if (!isAirdropStarted) {
+      const { success, failed } = judgeResult(list);
+      setSuccess(success);
+      setFailed(failed)
+    }
+  }, [isAirdropStarted])
 
   useEffect(() => {
     if (countAirdrop && showMultiplier) {
@@ -158,6 +168,7 @@ export default function Airdrop() {
   };
 
   const download = useCallback(() => {
+    console.log(list.length, "list length")
     if (list.length > 0) downloadAirdropResult(list, "airdrop_result");
   }, [list, token])
 
@@ -175,10 +186,21 @@ export default function Airdrop() {
 
   const clear = () => {
     setList([]);
-    // setAmountPerEach("");
-    // setTotalAmount("");
+    setAmountPerEach("");
+    setTotalAmount("");
+    setTotalCounts(0);
     setCollections([]);
-    // setCounts([[]]);
+    setMuliplier([]);
+    setCountAirdrop(false);
+    setWalletTokens([]);
+    setUploadedFiles([]);
+    setFile({});
+    setSteps([false, false, false]);
+    setRuleLen(1);
+    setIsAirdropStarted(false);
+    setCounts([[]]);
+    setFileId("");
+    setCanStartAirdrop(false);
     window.history.replaceState({}, "", removeCountsfromUrl(path));
   };
 
@@ -592,15 +614,26 @@ export default function Airdrop() {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center py-2 px-4 bg-primary-foreground rounded-full">{totalAmount}</div>
+                {!isAirdropStarted && <div className="flex items-center py-2 px-4 bg-primary-foreground rounded-full">{`${token?.balance}/${totalAmount}`}</div>}
               </div>
               <div>
                 {isAirdropStarted ? <Spinner_1 /> : <div className="flex justify-center my-8">
                   <div>
                     <div className="text-center">Airdrop has completed successfully!</div>
+                    <div className="text-center">{new Date().toUTCString()}</div>
+                    <div className="flex justify-around">
+                      <div className="flex gap-2">
+                        <SmallWallet />
+                        {`${success} Completed`}
+                      </div>
+                      <div className="flex gap-2">
+                        <FaildIcon />
+                        {`${failed} Failed`}
+                      </div>
+                    </div>
                     <div className="flex justify-center mt-4 gap-4">
-                      <Button className="border" onClick={() => { router.push("/airdrop/inputfile") }}>New Airdrop</Button>
-                      <Button className="border" onClick={() => { download }}>Download</Button>
+                      <Button className="border" onClick={() => { clear(); router.push("/airdrop/inputfile") }}>New Airdrop</Button>
+                      <Button className="border" onClick={download}>Download</Button>
                     </div>
                   </div>
                 </div>}
