@@ -136,7 +136,7 @@ export default function Airdrop() {
       const resultList = ftAridrop(list, totalAmount, totalCounts, balanceAirdrop);
       setList(resultList);
     }
-  }, [counts, multiplier, countAirdrop, forceRender, totalAmount, balanceAirdrop]);
+  }, [counts, multiplier, countAirdrop, forceRender, totalAmount, balanceAirdrop, stack]);
 
   const getList = async (fileId) => {
     if (fileId == "") return;
