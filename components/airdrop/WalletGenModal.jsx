@@ -52,17 +52,17 @@ export default function WalletGenModal() {
   }
 
   const walletGenerated = useCallback(async () => {
-    const {solFunded, tokenFunded} = await checkBalance(publicKey.current, token.address, fee, totalAmount);
-    if (!solFunded && !tokenFunded) {
-      setAlert({...ErrorAlert, text: "The wallet is not funded with both SOL and token"})
-      return
-    } else if(!solFunded) {
-      setAlert({...ErrorAlert, text: "The wallet is not funded with SOL"})
-      return
-    } else if(!tokenFunded){
-      setAlert({...ErrorAlert, text: "The wallet is not funded with token"})
-      return
-    }
+    // const {solFunded, tokenFunded} = await checkBalance(publicKey.current, token.address, fee, totalAmount);
+    // if (!solFunded && !tokenFunded) {
+    //   setAlert({...ErrorAlert, text: "The wallet is not funded with both SOL and token"})
+    //   return
+    // } else if(!solFunded) {
+    //   setAlert({...ErrorAlert, text: "The wallet is not funded with SOL"})
+    //   return
+    // } else if(!tokenFunded){
+    //   setAlert({...ErrorAlert, text: "The wallet is not funded with token"})
+    //   return
+    // }
     closeModal();
     setTempWallet(secretKey.current);
     setCanStartAirdrop(true);
