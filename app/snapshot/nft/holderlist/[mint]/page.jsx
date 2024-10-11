@@ -57,7 +57,8 @@ export default function Page() {
 
   useEffect(() => {
     if(isLoading == false && holderlist?.length > 0 && isSigned){
-      uploadList(holderlist);
+      const response = uploadList(holderlist);
+      if(response) setAlert({...SuccessAlert, text: "The result is successfully uploaded"})
     }
   },[isLoading, holderlist])
 

@@ -53,6 +53,7 @@ export default function Page() {
     if (isLoading == false && holderList?.length > 0 && isSigned) {
       console.log("uploading this list", {holderList})
       uploadList(holderList);
+      if(response) setAlert({...SuccessAlert, text: "The result is successfully uploaded"})
     }
   }, [isLoading, holderList])
 
