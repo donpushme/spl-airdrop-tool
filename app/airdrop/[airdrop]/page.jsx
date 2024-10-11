@@ -158,6 +158,8 @@ export default function Airdrop() {
       if (!Object.keys(list[0]).includes("balance")) {
         properties = Object.keys(list[0]).slice(1);
         setCollections(properties);
+      } else {
+        setCollections([])
       }
       const totalCounts = getTotalCountForSimple(list, properties);
       setTotalCounts(totalCounts)
@@ -209,6 +211,7 @@ export default function Airdrop() {
     if (file.isNft) {
       setCountAirdrop(true);
     } else {
+      setCountAirdrop(false);
       window.history.replaceState({}, "", removeCountsfromUrl(path));
     }
     setFile(file);
