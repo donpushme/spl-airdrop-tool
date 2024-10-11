@@ -309,7 +309,7 @@ export const completeProposal = async (id) => {
 export const fetchFile = async (fileId) => {
   const url = `/airdrop/file/${fileId}`
   try {
-    const {data} = await AxiosInstance.request({
+    const { data } = await AxiosInstance.request({
       url: url,
       method: "GET",
       headers: {
@@ -342,3 +342,62 @@ export const fetchUploadedFiles = async () => {
     console.log(error)
   }
 }
+
+
+export const uploadList = async (list) => {
+  const chunkSize = 1000; // 1MB chunks
+  const uploadId = Date.now().toString(); // Unique identifier for the upload session
+  let start = 0;
+  let chunkIndex = 0;
+
+  try {
+    while (start < list.length) {
+      const chunk = list.slice(start, start + chunkSize);
+      await uploadChunkList(chunk, uploadId, chunkIndex);
+      start += chunkSize;
+      chunkIndex++;
+    }
+
+    // Finalize the upload
+    const {success} = await finalizeUploadList(uploadId);
+
+    if (success) {
+      return true
+    } else {
+      console.log(`Upload failed`);
+      return false
+    }
+  } catch (error) {
+    return false
+  }
+};
+
+// Helper function for uploading a chunk
+const uploadChunkList = async (chunk, uploadId, chunkIndex) => {
+
+  const url = "/snapshot/upload-chunk"
+  await AxiosInstance.request({
+    url: url,
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${window.localStorage.getItem("token")}`,
+    },
+    data: {
+      chunk,
+      uploadId,
+      chunkIndex
+    }
+  });
+};
+
+// Helper function for finalizing the upload
+const finalizeUploadList = async (uploadId) => {
+  const {data} = await AxiosInstance.request({
+    url: `/snapshot/finalize-upload/${uploadId}`, method: 'POST', headers: {
+      Authorization: `Bearer ${window.localStorage.getItem("token")}`,
+    }
+  }
+  )
+  console.log({data})
+  return {success:data.success};
+};

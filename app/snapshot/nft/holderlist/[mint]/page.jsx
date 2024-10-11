@@ -11,12 +11,13 @@ import { useAlertContext } from "@/contexts/AlertContext";
 import Spinner_1 from "@/components/Assests/spinner/Spinner_1";
 import { combineTwoHolderList } from "@/lib/nftSnapshot";
 import { isValidSolanaAddress } from "@/lib/solana";
+import { uploadList } from "@/action";
 
 export default function Page() {
   const path = usePathname();
   const [isLoading, setIsLoading] = useState(false);
   const [holderlist, setHolderlist] = useState([]);
-  const { mint, setMint } = useAppContext();
+  const { isSigned, mint, setMint } = useAppContext();
   const { alert, setAlert } = useAlertContext();
   const [newAddress, setNewAddress] = useState("");
 
@@ -53,6 +54,12 @@ export default function Page() {
     setMint(path.split("/holderlist/")[1]);
     getHolderlist(path.split("/holderlist/")[1]);
   }, [path]);
+
+  useEffect(() => {
+    if(isLoading == false && holderlist?.length > 0 && isSigned){
+      uploadList(holderlist);
+    }
+  },[isLoading, holderlist])
 
   return (
     <div className="lg:w-[1024px] w-[95%]">

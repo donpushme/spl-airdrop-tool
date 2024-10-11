@@ -8,12 +8,15 @@ import { ErrorAlert, SuccessAlert } from "@/lib/alerts";
 import Spinner_1 from "@/components/Assests/spinner/Spinner_1";
 import FTOwnerTable from "@/components/snapshot/FTOwnerTable";
 import { getParams, ftSnapshot } from "@/lib/ftSnapshot";
+import { uploadList } from "@/action";
+import { useAppContext } from "@/contexts/AppContext";
 
 export default function Page() {
   const path = usePathname();
   const [isLoading, setIsLoading] = useState(true);
   const [holderList, setHolderList] = useState([]);
   const { alert, setAlert } = useAlertContext();
+  const {isSigned} = useAppContext()
   /**
    * Get the list of NFT holders and can continuously combine with new collection holder list
    */
@@ -47,9 +50,14 @@ export default function Page() {
   };
 
   useEffect(() => {
-    console.log("path==============>",path)
+    if (isLoading == false && holderList?.length > 0 && isSigned) {
+      console.log("uploading this list", {holderList})
+      uploadList(holderList);
+    }
+  }, [isLoading, holderList])
+
+  useEffect(() => {
     const { mint, min, max, walletLimit } = getParams(path);
-    console.log("params ============================>",mint, min, max, walletLimit);
     getHolderList(mint, min, max, walletLimit);
   }, [path]);
 

@@ -12,6 +12,7 @@ import airdropRouter from './routes/airdrop';
 import nftSwapRouter from './routes/nftSwap';
 import { Server as SocketIOServer } from "socket.io"
 import http from 'http'
+import snapshotRouter from './routes/snapshot';
 
 const app = express();
 const server = http.createServer(app);
@@ -38,6 +39,7 @@ app.get("/", authMiddleware, (req: AuthRequest, res: Response) => {
 app.use("/auth", authRouter);
 app.use("/airdrop", authMiddleware, airdropRouter);
 app.use("/nft-swap", authMiddleware, nftSwapRouter);
+app.use("/snapshot", authMiddleware, snapshotRouter);
 
 //For catching 404 Error
 app.use(notFoundHandler);
